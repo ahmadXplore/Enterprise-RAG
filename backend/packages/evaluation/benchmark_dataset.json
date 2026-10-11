@@ -1,0 +1,1684 @@
+[
+  {
+    "id": "dl-01",
+    "question": "What is the CIK number of Apple Inc.?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "apple-2024-sec-cik"
+    ],
+    "relevance_grades": {
+      "apple-2024-sec-cik": 3
+    },
+    "expected_answer": "0000320193",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-02",
+    "question": "What is the principal executive office address of Apple?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "apple-2024-address"
+    ],
+    "relevance_grades": {
+      "apple-2024-address": 3
+    },
+    "expected_answer": "One Apple Park Way, Cupertino, California 95014",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-03",
+    "question": "Who is the independent registered public accounting firm for Apple in fiscal 2024?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "apple-2024-auditor"
+    ],
+    "relevance_grades": {
+      "apple-2024-auditor": 3
+    },
+    "expected_answer": "Ernst & Young LLP",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-04",
+    "question": "What ticker symbol does Apple common stock trade under on NASDAQ?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "apple-2024-ticker"
+    ],
+    "relevance_grades": {
+      "apple-2024-ticker": 3
+    },
+    "expected_answer": "AAPL",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-05",
+    "question": "What is the fiscal year end date for Apple's fiscal year 2024?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "apple-2024-fiscal-date"
+    ],
+    "relevance_grades": {
+      "apple-2024-fiscal-date": 3
+    },
+    "expected_answer": "September 28, 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-06",
+    "question": "What is Microsoft Corporation's state or jurisdiction of incorporation?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "msft-2024-state"
+    ],
+    "relevance_grades": {
+      "msft-2024-state": 3
+    },
+    "expected_answer": "Washington",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-07",
+    "question": "What is Microsoft's CIK number listed on the SEC 10-K cover page?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "msft-2024-cik"
+    ],
+    "relevance_grades": {
+      "msft-2024-cik": 3
+    },
+    "expected_answer": "0000789019",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-08",
+    "question": "What is Microsoft's principal executive office address?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "msft-2024-address"
+    ],
+    "relevance_grades": {
+      "msft-2024-address": 3
+    },
+    "expected_answer": "One Microsoft Way, Redmond, Washington 98052-6399",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-09",
+    "question": "Who audited Microsoft Corporation's financial statements for fiscal 2024?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "msft-2024-auditor"
+    ],
+    "relevance_grades": {
+      "msft-2024-auditor": 3
+    },
+    "expected_answer": "Deloitte & Touche LLP",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-10",
+    "question": "What ticker symbol is used for Microsoft common stock?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "msft-2024-ticker"
+    ],
+    "relevance_grades": {
+      "msft-2024-ticker": 3
+    },
+    "expected_answer": "MSFT",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-11",
+    "question": "What is NVIDIA's fiscal year 2024 end date?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "nvda-2024-date"
+    ],
+    "relevance_grades": {
+      "nvda-2024-date": 3
+    },
+    "expected_answer": "January 28, 2024",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-12",
+    "question": "What is NVIDIA's CIK number on EDGAR?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "nvda-2024-cik"
+    ],
+    "relevance_grades": {
+      "nvda-2024-cik": 3
+    },
+    "expected_answer": "0001045810",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-13",
+    "question": "Where are NVIDIA's principal executive offices located?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "nvda-2024-address"
+    ],
+    "relevance_grades": {
+      "nvda-2024-address": 3
+    },
+    "expected_answer": "2788 San Tomas Expressway, Santa Clara, California 95051",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-14",
+    "question": "Who is NVIDIA's independent auditor?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "nvda-2024-auditor"
+    ],
+    "relevance_grades": {
+      "nvda-2024-auditor": 3
+    },
+    "expected_answer": "PricewaterhouseCoopers LLP",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-15",
+    "question": "Under what ticker does NVIDIA trade on NASDAQ?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "nvda-2024-ticker"
+    ],
+    "relevance_grades": {
+      "nvda-2024-ticker": 3
+    },
+    "expected_answer": "NVDA",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-16",
+    "question": "What is Amazon.com, Inc.'s CIK number?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "amzn-2023-cik"
+    ],
+    "relevance_grades": {
+      "amzn-2023-cik": 3
+    },
+    "expected_answer": "0001018724",
+    "metadata_constraints": {
+      "company": "Amazon.com, Inc.",
+      "year": 2023
+    }
+  },
+  {
+    "id": "dl-17",
+    "question": "What is Amazon's state of incorporation?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "amzn-2023-state"
+    ],
+    "relevance_grades": {
+      "amzn-2023-state": 3
+    },
+    "expected_answer": "Delaware",
+    "metadata_constraints": {
+      "company": "Amazon.com, Inc.",
+      "year": 2023
+    }
+  },
+  {
+    "id": "dl-18",
+    "question": "What is Alphabet Inc.'s CIK number?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "goog-2023-cik"
+    ],
+    "relevance_grades": {
+      "goog-2023-cik": 3
+    },
+    "expected_answer": "0001652044",
+    "metadata_constraints": {
+      "company": "Alphabet Inc.",
+      "year": 2023
+    }
+  },
+  {
+    "id": "dl-19",
+    "question": "What is the par value per share of Apple's common stock?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "apple-2024-par-value"
+    ],
+    "relevance_grades": {
+      "apple-2024-par-value": 3
+    },
+    "expected_answer": "$0.00001 per share",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "dl-20",
+    "question": "What title is given to Item 1A in SEC Form 10-K filings?",
+    "query_type": "direct_lookup",
+    "expected_chunk_ids": [
+      "sec-item-1a-title"
+    ],
+    "relevance_grades": {
+      "sec-item-1a-title": 3
+    },
+    "expected_answer": "Risk Factors",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-01",
+    "question": "How did Apple's total net sales change between fiscal 2023 and fiscal 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-sales-23-24"
+    ],
+    "relevance_grades": {
+      "apple-sales-23-24": 3
+    },
+    "expected_answer": "$383,285M in 2023 to $391,035M in 2024 (2% increase)",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-02",
+    "question": "What was Apple's net sales progression from fiscal 2022 to fiscal 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-sales-22-24"
+    ],
+    "relevance_grades": {
+      "apple-sales-22-24": 3
+    },
+    "expected_answer": "$394,328M (2022) to $383,285M (2023) to $391,035M (2024)",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-03",
+    "question": "How did Apple's Services revenue grow from 2022 through 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-services-growth"
+    ],
+    "relevance_grades": {
+      "apple-services-growth": 3
+    },
+    "expected_answer": "$78,129M (2022) to $85,200M (2023) to $96,169M (2024)",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-04",
+    "question": "How did Apple's R&D expense change between 2023 and 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-rnd-23-24"
+    ],
+    "relevance_grades": {
+      "apple-rnd-23-24": 3
+    },
+    "expected_answer": "$29,915M in 2023 to $31,370M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-05",
+    "question": "How did Apple's iPhone net sales change between 2023 and 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-iphone-23-24"
+    ],
+    "relevance_grades": {
+      "apple-iphone-23-24": 3
+    },
+    "expected_answer": "$200,583M in 2023 compared to $201,183M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-06",
+    "question": "What was the trend in Apple's effective tax rate from 2022 to 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-tax-rate-trend"
+    ],
+    "relevance_grades": {
+      "apple-tax-rate-trend": 3
+    },
+    "expected_answer": "16.2% in 2022, 14.7% in 2023, and 24.1% in 2024 due to European Court judgment",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-07",
+    "question": "How did Microsoft's Cloud revenue grow from fiscal 2023 to 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "msft-cloud-23-24"
+    ],
+    "relevance_grades": {
+      "msft-cloud-23-24": 3
+    },
+    "expected_answer": "Over $110B in 2023 to over $137B in 2024",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-08",
+    "question": "How did Microsoft's Productivity and Business Processes revenue change from 2023 to 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "msft-pbp-growth"
+    ],
+    "relevance_grades": {
+      "msft-pbp-growth": 3
+    },
+    "expected_answer": "Increased 12% driven by Office 365 commercial",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-09",
+    "question": "How did Microsoft's Intelligent Cloud segment revenue change between 2023 and 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "msft-intel-cloud-trend"
+    ],
+    "relevance_grades": {
+      "msft-intel-cloud-trend": 3
+    },
+    "expected_answer": "Increased 19% driven by Azure growth",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-10",
+    "question": "What was NVIDIA's revenue growth between fiscal 2023 and fiscal 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "nvda-revenue-23-24"
+    ],
+    "relevance_grades": {
+      "nvda-revenue-23-24": 3
+    },
+    "expected_answer": "$26,974M in fiscal 2023 to $60,922M in fiscal 2024 (126% increase)",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-11",
+    "question": "How did NVIDIA's Compute & Networking segment revenue change from 2023 to 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "nvda-compute-trend"
+    ],
+    "relevance_grades": {
+      "nvda-compute-trend": 3
+    },
+    "expected_answer": "$15,068M in 2023 to $47,405M in 2024 (215% increase)",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-12",
+    "question": "What was NVIDIA's Data Center revenue trend across 2023 and 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "nvda-datacenter-trend"
+    ],
+    "relevance_grades": {
+      "nvda-datacenter-trend": 3
+    },
+    "expected_answer": "$15,005M in 2023 to $47,525M in 2024",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-13",
+    "question": "How did Apple's Mac sales evolve from 2022 to 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-mac-trend"
+    ],
+    "relevance_grades": {
+      "apple-mac-trend": 3
+    },
+    "expected_answer": "$40,177M in 2022, $29,357M in 2023, and $29,984M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-14",
+    "question": "How did Apple's Wearables, Home and Accessories sales change between 2023 and 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-wearables-trend"
+    ],
+    "relevance_grades": {
+      "apple-wearables-trend": 3
+    },
+    "expected_answer": "$39,845M in 2023 down to $37,005M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-15",
+    "question": "How did Apple's total operating expenses change between 2023 and 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-opex-trend"
+    ],
+    "relevance_grades": {
+      "apple-opex-trend": 3
+    },
+    "expected_answer": "$54,847M in 2023 to $57,495M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-16",
+    "question": "What was Apple's cash flow from operating activities in 2022, 2023, and 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-cfo-trend"
+    ],
+    "relevance_grades": {
+      "apple-cfo-trend": 3
+    },
+    "expected_answer": "$122,151M in 2022, $110,543M in 2023, $118,254M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-17",
+    "question": "How did Microsoft's headcount change from June 2023 to June 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "msft-headcount-trend"
+    ],
+    "relevance_grades": {
+      "msft-headcount-trend": 3
+    },
+    "expected_answer": "Approximately 221,000 to approximately 228,000",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-18",
+    "question": "What was NVIDIA's gross margin percentage change from fiscal 2023 to fiscal 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "nvda-gm-trend"
+    ],
+    "relevance_grades": {
+      "nvda-gm-trend": 3
+    },
+    "expected_answer": "56.9% in 2023 to 72.7% in 2024",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-19",
+    "question": "How did Apple's gross margin percentage change from 2023 to 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-gross-margin-trend"
+    ],
+    "relevance_grades": {
+      "apple-gross-margin-trend": 3
+    },
+    "expected_answer": "44.1% in 2023 to 46.2% in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "temp-20",
+    "question": "How did Apple's net income change between 2023 and 2024?",
+    "query_type": "temporal",
+    "expected_chunk_ids": [
+      "apple-net-income-trend"
+    ],
+    "relevance_grades": {
+      "apple-net-income-trend": 3
+    },
+    "expected_answer": "$96,995M in 2023 to $93,736M in 2024 due to EC State Aid tax charge",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-01",
+    "question": "Compare Apple's Products gross margin percentage with Services gross margin percentage in 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-product-vs-service-margin"
+    ],
+    "relevance_grades": {
+      "apple-product-vs-service-margin": 3
+    },
+    "expected_answer": "Products gross margin was 37.1% while Services gross margin was 74.0%",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-02",
+    "question": "Compare net sales of iPhone versus Services for Apple in fiscal 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-iphone-vs-services-sales"
+    ],
+    "relevance_grades": {
+      "apple-iphone-vs-services-sales": 3
+    },
+    "expected_answer": "iPhone was $201,183M while Services was $96,169M",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-03",
+    "question": "Compare Apple's net sales in the Americas region to Europe in 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-americas-vs-europe"
+    ],
+    "relevance_grades": {
+      "apple-americas-vs-europe": 3
+    },
+    "expected_answer": "Americas was $148,705M compared to Europe at $95,066M",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-04",
+    "question": "Compare Apple's net sales in Greater China between 2023 and 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-china-comparison"
+    ],
+    "relevance_grades": {
+      "apple-china-comparison": 3
+    },
+    "expected_answer": "$72,559M in 2023 versus $66,952M in 2024 (a decrease of 8%)",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-05",
+    "question": "Compare iPad revenue to Mac revenue for Apple in 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-ipad-vs-mac"
+    ],
+    "relevance_grades": {
+      "apple-ipad-vs-mac": 3
+    },
+    "expected_answer": "iPad revenue was $26,694M compared to Mac revenue of $29,984M",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-06",
+    "question": "Compare Microsoft's Intelligent Cloud segment revenue to Productivity and Business Processes revenue in fiscal 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "msft-cloud-vs-pbp"
+    ],
+    "relevance_grades": {
+      "msft-cloud-vs-pbp": 3
+    },
+    "expected_answer": "Intelligent Cloud was $105,362M versus Productivity at $77,712M",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-07",
+    "question": "Compare Microsoft's More Personal Computing revenue in 2023 and 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "msft-mpc-comparison"
+    ],
+    "relevance_grades": {
+      "msft-mpc-comparison": 3
+    },
+    "expected_answer": "$54,734M in 2023 versus $62,010M in 2024 (up 13% with Activision Blizzard)",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-08",
+    "question": "Compare NVIDIA's Data Center revenue to Gaming revenue in fiscal 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "nvda-datacenter-vs-gaming"
+    ],
+    "relevance_grades": {
+      "nvda-datacenter-vs-gaming": 3
+    },
+    "expected_answer": "Data Center was $47,525M compared to Gaming at $10,447M",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-09",
+    "question": "Compare NVIDIA's Automotive segment revenue to Professional Visualization revenue in 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "nvda-auto-vs-provis"
+    ],
+    "relevance_grades": {
+      "nvda-auto-vs-provis": 3
+    },
+    "expected_answer": "Automotive was $1,091M versus Professional Visualization of $1,553M",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-10",
+    "question": "Compare Apple's R&D expenditures to SG&A expenditures in fiscal 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-rnd-vs-sga"
+    ],
+    "relevance_grades": {
+      "apple-rnd-vs-sga": 3
+    },
+    "expected_answer": "R&D was $31,370M while SG&A was $26,125M",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-11",
+    "question": "Compare Apple's operating income from Products versus Services in 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-gross-profit-by-segment"
+    ],
+    "relevance_grades": {
+      "apple-gross-profit-by-segment": 3
+    },
+    "expected_answer": "Products generated $109,308M gross profit and Services generated $71,196M gross profit",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-12",
+    "question": "Compare Apple's cash paid for income taxes in 2023 versus 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-cash-taxes-comparison"
+    ],
+    "relevance_grades": {
+      "apple-cash-taxes-comparison": 3
+    },
+    "expected_answer": "$18,679M in 2023 compared to $26,307M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-13",
+    "question": "Compare Microsoft's revenue from the United States versus other countries in 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "msft-geo-comparison"
+    ],
+    "relevance_grades": {
+      "msft-geo-comparison": 3
+    },
+    "expected_answer": "US was $121,509M versus International at $123,575M",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-14",
+    "question": "Compare NVIDIA's revenue from the United States, Taiwan, and China in fiscal 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "nvda-geo-breakdown"
+    ],
+    "relevance_grades": {
+      "nvda-geo-breakdown": 3
+    },
+    "expected_answer": "US: $21,180M, Taiwan: $13,411M, China: $10,272M",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-15",
+    "question": "Compare Apple's term debt maturing within one year to term debt maturing after one year as of Sept 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-debt-maturity-comparison"
+    ],
+    "relevance_grades": {
+      "apple-debt-maturity-comparison": 3
+    },
+    "expected_answer": "Current portion was $10,912M versus non-current of $85,758M",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-16",
+    "question": "Compare Apple's share repurchase amounts between fiscal 2023 and 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-buybacks-comparison"
+    ],
+    "relevance_grades": {
+      "apple-buybacks-comparison": 3
+    },
+    "expected_answer": "$77,550M in 2023 versus $94,952M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-17",
+    "question": "Compare Apple's dividends paid in 2023 versus 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-dividends-comparison"
+    ],
+    "relevance_grades": {
+      "apple-dividends-comparison": 3
+    },
+    "expected_answer": "$15,025M in 2023 compared to $15,234M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-18",
+    "question": "Compare Microsoft's research and development expense in 2023 versus 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "msft-rnd-comparison"
+    ],
+    "relevance_grades": {
+      "msft-rnd-comparison": 3
+    },
+    "expected_answer": "$27,195M in 2023 versus $29,510M in 2024",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-19",
+    "question": "Compare NVIDIA's R&D spend between 2023 and 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "nvda-rnd-comparison"
+    ],
+    "relevance_grades": {
+      "nvda-rnd-comparison": 3
+    },
+    "expected_answer": "$7,339M in 2023 versus $8,675M in 2024",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "comp-20",
+    "question": "Compare Apple's inventory balance at end of fiscal 2023 to fiscal 2024.",
+    "query_type": "comparison",
+    "expected_chunk_ids": [
+      "apple-inventory-comparison"
+    ],
+    "relevance_grades": {
+      "apple-inventory-comparison": 3
+    },
+    "expected_answer": "$6,331M in 2023 compared to $5,391M in 2024",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-01",
+    "question": "What was Apple's total cash, cash equivalents and marketable securities balance as of September 28, 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "apple-total-cash-2024"
+    ],
+    "relevance_grades": {
+      "apple-total-cash-2024": 3
+    },
+    "expected_answer": "$156,652 million (Cash and cash equivalents of $29,943M + marketable securities of $126,709M)",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-02",
+    "question": "What was Apple's diluted earnings per share for fiscal year 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "apple-eps-2024"
+    ],
+    "relevance_grades": {
+      "apple-eps-2024": 3
+    },
+    "expected_answer": "$6.08 per share",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-03",
+    "question": "What was Apple's total term debt principal balance as of September 28, 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "apple-term-debt-2024"
+    ],
+    "relevance_grades": {
+      "apple-term-debt-2024": 3
+    },
+    "expected_answer": "$96,670 million",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-04",
+    "question": "What was Microsoft Corporation's total revenue for fiscal year 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "msft-revenue-2024"
+    ],
+    "relevance_grades": {
+      "msft-revenue-2024": 3
+    },
+    "expected_answer": "$245,122 million",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-05",
+    "question": "What was Microsoft's diluted earnings per share for fiscal 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "msft-eps-2024"
+    ],
+    "relevance_grades": {
+      "msft-eps-2024": 3
+    },
+    "expected_answer": "$11.80 per share",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-06",
+    "question": "What was NVIDIA's total net income for fiscal year 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "nvda-net-income-2024"
+    ],
+    "relevance_grades": {
+      "nvda-net-income-2024": 3
+    },
+    "expected_answer": "$29,760 million",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-07",
+    "question": "What was NVIDIA's diluted earnings per share for fiscal 2024 (pre-split)?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "nvda-eps-2024"
+    ],
+    "relevance_grades": {
+      "nvda-eps-2024": 3
+    },
+    "expected_answer": "$11.93 per share",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-08",
+    "question": "What were Apple's total assets as of September 28, 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "apple-total-assets-2024"
+    ],
+    "relevance_grades": {
+      "apple-total-assets-2024": 3
+    },
+    "expected_answer": "$364,980 million",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-09",
+    "question": "What was Apple's total shareholders' equity as of September 28, 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "apple-equity-2024"
+    ],
+    "relevance_grades": {
+      "apple-equity-2024": 3
+    },
+    "expected_answer": "$66,988 million",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-10",
+    "question": "What was Apple's total provision for income taxes in fiscal 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "apple-tax-provision-2024"
+    ],
+    "relevance_grades": {
+      "apple-tax-provision-2024": 3
+    },
+    "expected_answer": "$29,748 million",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-11",
+    "question": "How much did Apple spend on capital expenditures in fiscal year 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "apple-capex-2024"
+    ],
+    "relevance_grades": {
+      "apple-capex-2024": 3
+    },
+    "expected_answer": "$9,451 million (payments for acquisition of property, plant and equipment)",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-12",
+    "question": "What was Microsoft's operating income for fiscal year 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "msft-operating-income-2024"
+    ],
+    "relevance_grades": {
+      "msft-operating-income-2024": 3
+    },
+    "expected_answer": "$109,433 million",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-13",
+    "question": "How much cash did Microsoft return to shareholders via share repurchases in fiscal 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "msft-buybacks-2024"
+    ],
+    "relevance_grades": {
+      "msft-buybacks-2024": 3
+    },
+    "expected_answer": "$17,256 million",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-14",
+    "question": "What was NVIDIA's total cash, cash equivalents and marketable securities balance at end of fiscal 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "nvda-cash-2024"
+    ],
+    "relevance_grades": {
+      "nvda-cash-2024": 3
+    },
+    "expected_answer": "$25,984 million",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "num-15",
+    "question": "How many full-time employees did Apple have at the end of fiscal 2024?",
+    "query_type": "numerical",
+    "expected_chunk_ids": [
+      "apple-employees-2024"
+    ],
+    "relevance_grades": {
+      "apple-employees-2024": 3
+    },
+    "expected_answer": "Approximately 164,000 full-time equivalent employees",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-01",
+    "question": "What was the outcome and status of the Epic Games v. Apple antitrust litigation mentioned in Apple's 2024 10-K?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-epic-games-legal"
+    ],
+    "relevance_grades": {
+      "apple-epic-games-legal": 3
+    },
+    "expected_answer": "Supreme Court denied petitions for certiorari in Jan 2024, district court anti-steering injunction took effect",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-02",
+    "question": "What was the European Court of Justice decision regarding European Commission state aid to Apple in Ireland?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-ec-state-aid"
+    ],
+    "relevance_grades": {
+      "apple-ec-state-aid": 3
+    },
+    "expected_answer": "ECJ annulled General Court judgment and confirmed EC decision that Ireland provided illegal state aid, resulting in ~13B euros plus interest impact",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-03",
+    "question": "What risks does Apple disclose concerning the European Union Digital Markets Act (DMA)?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-dma-risks"
+    ],
+    "relevance_grades": {
+      "apple-dma-risks": 3
+    },
+    "expected_answer": "DMA requires compliance obligations including alternative app marketplaces and payment systems which could affect Services margin and developer relations",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-04",
+    "question": "What antitrust investigations by the US Department of Justice does Apple disclose in its 2024 10-K?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-doj-antitrust"
+    ],
+    "relevance_grades": {
+      "apple-doj-antitrust": 3
+    },
+    "expected_answer": "DOJ along with state attorneys general filed civil antitrust complaint alleging monopolization of smartphone markets",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-05",
+    "question": "What does Apple disclose regarding indemnification obligations to third parties?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-indemnification"
+    ],
+    "relevance_grades": {
+      "apple-indemnification": 3
+    },
+    "expected_answer": "Apple agrees to indemnify customers and suppliers against certain third-party patent and IP claims",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-06",
+    "question": "What legal proceedings does Microsoft disclose regarding its acquisition of Activision Blizzard?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "msft-activision-legal"
+    ],
+    "relevance_grades": {
+      "msft-activision-legal": 3
+    },
+    "expected_answer": "Antitrust reviews by FTC in US and CMA in UK, subsequent closing of transaction in October 2023",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-07",
+    "question": "What does Microsoft disclose regarding copyright and AI intellectual property infringement risks?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "msft-ai-copyright-risks"
+    ],
+    "relevance_grades": {
+      "msft-ai-copyright-risks": 3
+    },
+    "expected_answer": "Risk of copyright infringement claims relating to training data and generated outputs of AI models",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-08",
+    "question": "What US export control regulations impact NVIDIA's semiconductor shipments to China?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "nvda-export-controls"
+    ],
+    "relevance_grades": {
+      "nvda-export-controls": 3
+    },
+    "expected_answer": "US Department of Commerce Bureau of Industry and Security (BIS) export licensing rules for advanced GPUs",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-09",
+    "question": "What risks does NVIDIA face regarding intellectual property infringement claims from competitors?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "nvda-ip-risks"
+    ],
+    "relevance_grades": {
+      "nvda-ip-risks": 3
+    },
+    "expected_answer": "Frequent patent and IP litigation in semiconductor and graphics technology with risk of injunctions or royalties",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-10",
+    "question": "What environmental regulations and compliance matters are disclosed in Apple's 10-K?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-environmental-legal"
+    ],
+    "relevance_grades": {
+      "apple-environmental-legal": 3
+    },
+    "expected_answer": "Global carbon reduction initiatives, hazardous substances regulations (RoHS, REACH), and e-waste takeback laws",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-11",
+    "question": "What does Apple disclose regarding patent licensing disputes with Masimo Corporation?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-masimo-dispute"
+    ],
+    "relevance_grades": {
+      "apple-masimo-dispute": 3
+    },
+    "expected_answer": "US ITC import ban on certain Apple Watch models containing pulse oximetry features and ongoing appeals",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-12",
+    "question": "What privacy regulations does Apple identify as compliance risks in Item 1A?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-privacy-regulations"
+    ],
+    "relevance_grades": {
+      "apple-privacy-regulations": 3
+    },
+    "expected_answer": "GDPR in Europe, CCPA/CPRA in California, and cross-border data transfer mechanisms",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-13",
+    "question": "What cybersecurity legal and disclosure requirements under the SEC does Microsoft address in its 10-K?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "msft-sec-cyber-rules"
+    ],
+    "relevance_grades": {
+      "msft-sec-cyber-rules": 3
+    },
+    "expected_answer": "Compliance with new SEC cybersecurity disclosure rules for material incidents and risk management governance",
+    "metadata_constraints": {
+      "company": "Microsoft Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-14",
+    "question": "What anti-corruption and Foreign Corrupt Practices Act (FCPA) risks are disclosed by Apple?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "apple-fcpa-compliance"
+    ],
+    "relevance_grades": {
+      "apple-fcpa-compliance": 3
+    },
+    "expected_answer": "Risks associated with international operations, distributor networks, and government customer sales",
+    "metadata_constraints": {
+      "company": "Apple Inc.",
+      "year": 2024
+    }
+  },
+  {
+    "id": "leg-15",
+    "question": "What does NVIDIA disclose regarding supply chain concentration risks with third-party foundries?",
+    "query_type": "legal",
+    "expected_chunk_ids": [
+      "nvda-tsmc-supplier-risk"
+    ],
+    "relevance_grades": {
+      "nvda-tsmc-supplier-risk": 3
+    },
+    "expected_answer": "Dependence on TSMC for semiconductor wafer fabrication and assembly/test services",
+    "metadata_constraints": {
+      "company": "NVIDIA Corporation",
+      "year": 2024
+    }
+  },
+  {
+    "id": "cross-01",
+    "question": "Compare Apple's total fiscal 2024 net sales with Microsoft's fiscal 2024 total revenue.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-sales-23-24",
+      "msft-revenue-2024"
+    ],
+    "relevance_grades": {
+      "apple-sales-23-24": 3,
+      "msft-revenue-2024": 3
+    },
+    "expected_answer": "Apple: $391,035M vs Microsoft: $245,122M",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-02",
+    "question": "Compare the R&D expenditure of Apple and Microsoft in their fiscal 2024 years.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-rnd-23-24",
+      "msft-rnd-comparison"
+    ],
+    "relevance_grades": {
+      "apple-rnd-23-24": 3,
+      "msft-rnd-comparison": 3
+    },
+    "expected_answer": "Apple: $31,370M vs Microsoft: $29,510M",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-03",
+    "question": "Compare the total cash, cash equivalents and marketable securities between Apple and NVIDIA in 2024.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-total-cash-2024",
+      "nvda-cash-2024"
+    ],
+    "relevance_grades": {
+      "apple-total-cash-2024": 3,
+      "nvda-cash-2024": 3
+    },
+    "expected_answer": "Apple: $156,652M vs NVIDIA: $25,984M",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-04",
+    "question": "Compare the gross margin percentage of NVIDIA and Apple in fiscal 2024.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "nvda-gm-trend",
+      "apple-gross-margin-trend"
+    ],
+    "relevance_grades": {
+      "nvda-gm-trend": 3,
+      "apple-gross-margin-trend": 3
+    },
+    "expected_answer": "NVIDIA: 72.7% vs Apple: 46.2%",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-05",
+    "question": "Compare the capital expenditures of Apple and Microsoft in fiscal 2024.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-capex-2024",
+      "msft-capex-2024"
+    ],
+    "relevance_grades": {
+      "apple-capex-2024": 3,
+      "msft-capex-2024": 3
+    },
+    "expected_answer": "Apple: $9,451M vs Microsoft: $44,484M",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-06",
+    "question": "Compare the net income of Apple and Microsoft in fiscal 2024.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-net-income-trend",
+      "msft-net-income-2024"
+    ],
+    "relevance_grades": {
+      "apple-net-income-trend": 3,
+      "msft-net-income-2024": 3
+    },
+    "expected_answer": "Apple: $93,736M vs Microsoft: $88,136M",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-07",
+    "question": "Compare the primary independent auditors for Apple, Microsoft, and NVIDIA in 2024.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-2024-auditor",
+      "msft-2024-auditor",
+      "nvda-2024-auditor"
+    ],
+    "relevance_grades": {
+      "apple-2024-auditor": 3,
+      "msft-2024-auditor": 3,
+      "nvda-2024-auditor": 3
+    },
+    "expected_answer": "Apple: Ernst & Young; Microsoft: Deloitte & Touche; NVIDIA: PricewaterhouseCoopers",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-08",
+    "question": "Compare the total employee headcount between Apple and Microsoft as of their 2024 10-K filings.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-employees-2024",
+      "msft-headcount-trend"
+    ],
+    "relevance_grades": {
+      "apple-employees-2024": 3,
+      "msft-headcount-trend": 3
+    },
+    "expected_answer": "Apple: ~164,000 full-time equivalents vs Microsoft: ~228,000 employees",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-09",
+    "question": "Compare the revenue growth rates of Apple and NVIDIA from fiscal 2023 to fiscal 2024.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-sales-23-24",
+      "nvda-revenue-23-24"
+    ],
+    "relevance_grades": {
+      "apple-sales-23-24": 3,
+      "nvda-revenue-23-24": 3
+    },
+    "expected_answer": "Apple grew ~2% while NVIDIA grew ~126%",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "cross-10",
+    "question": "Compare Apple's Services revenue with Microsoft's Cloud revenue in fiscal 2024.",
+    "query_type": "cross_document",
+    "expected_chunk_ids": [
+      "apple-services-growth",
+      "msft-cloud-23-24"
+    ],
+    "relevance_grades": {
+      "apple-services-growth": 3,
+      "msft-cloud-23-24": 3
+    },
+    "expected_answer": "Apple Services: $96,169M vs Microsoft Cloud: over $137B",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-01",
+    "question": "What is the projected revenue of Apple's secret Project Titan electric vehicle in 2028?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable from public 10-K filings (speculative future confidential project canceled).",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-02",
+    "question": "What is Tim Cook's private personal home address and mobile phone number?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable (personal private data excluded from SEC public filings).",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-03",
+    "question": "What were the internal Slack messages between Microsoft executives regarding OpenAI board decisions in Nov 2023?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable from public 10-K filings.",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-04",
+    "question": "What are the private cryptographic keys for Apple Pay root certificate authorities?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable (security secrets not disclosed in 10-K).",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-05",
+    "question": "What is NVIDIA's projected Blackwell architecture gross margin for fiscal year 2030?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable (future projection beyond guidance not in historical 10-K).",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-06",
+    "question": "What is the exact recipe and proprietary coating formula for Apple Vision Pro glass?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable (trade secrets not disclosed in 10-K filings).",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-07",
+    "question": "How many queries did ChatGPT process on Azure during Microsoft fiscal year 1999?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable (anachronistic query; ChatGPT and Azure did not exist in 1999).",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-08",
+    "question": "What confidential settlement payment did Apple pay to Qualcomm under seal in 2019?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable (terms kept confidential and redacted per SEC rules).",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-09",
+    "question": "What was NVIDIA's revenue from quantum computing chips sold on Mars in 2024?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable (fictional scenario).",
+    "metadata_constraints": {}
+  },
+  {
+    "id": "unans-10",
+    "question": "What were Apple's total sales of flying cars in fiscal year 2024?",
+    "query_type": "unanswerable",
+    "expected_chunk_ids": [],
+    "relevance_grades": {},
+    "expected_answer": "Unanswerable (Apple does not manufacture or sell flying cars).",
+    "metadata_constraints": {}
+  }
+]

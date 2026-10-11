@@ -1,0 +1,274 @@
+{
+  "dense_only": {
+    "pipeline": "Dense only",
+    "total_cases": 110,
+    "recall_at_5": 0.09090909090909091,
+    "recall_at_10": 0.09090909090909091,
+    "mrr": 0.09090909090909091,
+    "ndcg_at_5": 0.09090909090909091,
+    "ndcg_at_10": 0.09090909090909091,
+    "avg_latency_ms": 4.9830236363711515,
+    "by_category": {
+      "direct_lookup": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "temporal": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "comparison": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "numerical": {
+        "count": 15,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "legal": {
+        "count": 15,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "cross_document": {
+        "count": 10,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "unanswerable": {
+        "count": 10,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "ndcg_at_10": 1.0
+      }
+    }
+  },
+  "sparse_only": {
+    "pipeline": "Sparse only",
+    "total_cases": 110,
+    "recall_at_5": 0.09090909090909091,
+    "recall_at_10": 0.09090909090909091,
+    "mrr": 0.09090909090909091,
+    "ndcg_at_5": 0.09090909090909091,
+    "ndcg_at_10": 0.09090909090909091,
+    "avg_latency_ms": 0.15014363585082305,
+    "by_category": {
+      "direct_lookup": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "temporal": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "comparison": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "numerical": {
+        "count": 15,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "legal": {
+        "count": 15,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "cross_document": {
+        "count": 10,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "unanswerable": {
+        "count": 10,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "ndcg_at_10": 1.0
+      }
+    }
+  },
+  "hybrid": {
+    "pipeline": "Hybrid (Dense + Sparse + RRF)",
+    "total_cases": 110,
+    "recall_at_5": 0.09090909090909091,
+    "recall_at_10": 0.09090909090909091,
+    "mrr": 0.09090909090909091,
+    "ndcg_at_5": 0.09090909090909091,
+    "ndcg_at_10": 0.09090909090909091,
+    "avg_latency_ms": 5.017826364465608,
+    "by_category": {
+      "direct_lookup": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "temporal": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "comparison": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "numerical": {
+        "count": 15,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "legal": {
+        "count": 15,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "cross_document": {
+        "count": 10,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "unanswerable": {
+        "count": 10,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "ndcg_at_10": 1.0
+      }
+    }
+  },
+  "hybrid_rerank": {
+    "pipeline": "Hybrid + Reranker",
+    "total_cases": 110,
+    "recall_at_5": 0.09090909090909091,
+    "recall_at_10": 0.09090909090909091,
+    "mrr": 0.09090909090909091,
+    "ndcg_at_5": 0.09090909090909091,
+    "ndcg_at_10": 0.09090909090909091,
+    "avg_latency_ms": 5.113469999791547,
+    "by_category": {
+      "direct_lookup": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "temporal": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "comparison": {
+        "count": 20,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "numerical": {
+        "count": 15,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "legal": {
+        "count": 15,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "cross_document": {
+        "count": 10,
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0
+      },
+      "unanswerable": {
+        "count": 10,
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "ndcg_at_10": 1.0
+      }
+    }
+  }
+}

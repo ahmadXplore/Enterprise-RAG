@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-10-02 14:06:58 UTC",
+  "embedding_dense": "BAAI/bge-small-en-v1.5 (384-dim)",
+  "embedding_sparse": "BM25 (FastEmbed)",
+  "reranker": "BAAI/bge-reranker-base",
+  "llm_provider": "Groq / Llama-3.3-70b-versatile",
+  "vector_db": "Qdrant",
+  "retrieval_k": {
+    "dense_k": 30,
+    "sparse_k": 30,
+    "fusion_k": 20,
+    "rerank_k": 10
+  },
+  "agent_limits": {
+    "max_retrieval_attempts": 3,
+    "max_tool_calls": 10
+  }
+}

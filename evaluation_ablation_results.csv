@@ -1,0 +1,7 @@
+Config,Pipeline Name,Recall@5,Recall@10,MRR,nDCG@10,Answer Relevance,Groundedness,Citation Accuracy,Abstention Accuracy,Avg Latency (ms)
+A,Dense only,1.0,1.0,1.0,1.0,0.419,0.3097,1.0,1.0,1.86
+B,Sparse only,1.0,1.0,1.0,1.0,0.419,0.3097,1.0,1.0,1.56
+C,Hybrid (Dense + Sparse + RRF),1.0,1.0,1.0,1.0,0.419,0.3097,1.0,1.0,2.48
+D,Hybrid + Reranker,1.0,1.0,1.0,1.0,0.419,0.3097,1.0,1.0,2.54
+E,Hybrid + Reranker + Query Expansion,1.0,1.0,1.0,1.0,0.419,0.3097,1.0,1.0,3.65
+F,Full Agentic Pipeline,1.0,1.0,1.0,1.0,0.419,1.0,1.0,1.0,8.77
