@@ -56,6 +56,9 @@ class DocumentChunkRead(BaseModel):
 
     id: uuid.UUID
     document_version_id: uuid.UUID
+    document_id: uuid.UUID | None = None
+    document_title: str | None = None
+    file_name: str | None = None
     chunk_index: int
     chunk_type: str | None = None
     text: str

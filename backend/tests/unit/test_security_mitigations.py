@@ -231,17 +231,18 @@ class TestSSEMitigations:
 
     @pytest.mark.asyncio
     async def test_sse_timeout_emits_error_event(self):
-        """When graph.run() times out, the stream emits an error event."""
+        """When graph.astream_run() times out, the stream emits an error event."""
         from apps.api.app.services.chat_service import ChatService, _sse_active
 
         mock_session = AsyncMock()
         service = ChatService(session=mock_session)
 
-        async def _slow_run(**_kwargs):
+        async def _slow_astream_run(**_kwargs):
             await asyncio.sleep(999)
+            yield {}  # never reached, but makes it an async generator
 
         mock_graph = MagicMock()
-        mock_graph.run = _slow_run
+        mock_graph.astream_run = _slow_astream_run
         service._graph = mock_graph
 
         # Patch settings so timeout fires immediately

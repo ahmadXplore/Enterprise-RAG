@@ -14,6 +14,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import asyncio
+
 from apps.api.app.api.deps import (
     check_document_access,
     get_client_ip,
@@ -26,6 +28,7 @@ from apps.api.app.config import get_settings
 from apps.api.app.core.audit import record_audit_log
 from apps.api.app.core.rate_limit import rate_limit_ingest, rate_limit_write
 from apps.api.app.models.document import Document, DocumentAccess, DocumentVersion
+from apps.api.app.models.ingestion import IngestionJob
 from apps.api.app.models.user import Role, User
 from apps.api.app.repositories.document_repo import DocumentRepository
 from apps.api.app.schemas.document import (
@@ -37,7 +40,7 @@ from apps.api.app.schemas.document import (
 )
 from apps.api.app.schemas.pagination import PaginatedResponse
 from apps.api.app.services.document_service import DocumentService
-from apps.api.app.services.ingestion_service import IngestionService
+from apps.api.app.services.ingestion_service import IngestionService, process_ingestion_job
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -174,7 +177,29 @@ async def upload_and_process_document(
             detail="File size exceeds 50MB limit.",
         )
 
+    # Enterprise Malicious File & Corruption Security Scan
+    from packages.ingestion.security_scanner import FileSecurityScanner, FileSecurityError
+
+    try:
+        scan_res = FileSecurityScanner.scan_and_sanitize(content, safe_name, ext)
+        content = scan_res.sanitized_content
+    except FileSecurityError as sec_err:
+        await record_audit_log(
+            session=session,
+            action="security:malicious_file_blocked",
+            resource_type="document",
+            user_id=admin_user.id,
+            client_ip=get_client_ip(request),
+            metadata={"filename": safe_name, "error": str(sec_err)},
+        )
+        await session.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Security verification rejected file '{safe_name}': {str(sec_err)}",
+        )
+
     file_hash = hashlib.sha256(content).hexdigest()
+
 
     doc_repo = DocumentRepository(session)
     existing_doc = await doc_repo.get_by_hash(file_hash)
@@ -245,97 +270,51 @@ async def upload_and_process_document(
                 created_at=datetime.now(UTC),
             )
         )
-    await session.flush()
+    # Create IngestionJob record to track multi-stage background processing
+    job_id = uuid.uuid4()
+    job = IngestionJob(
+        id=job_id,
+        document_id=doc_id,
+        document_version_id=version_id,
+        job_type="upload_ingest",
+        status="queued",
+        progress=0,
+        current_stage="validation",
+        started_at=datetime.now(UTC),
+    )
+    session.add(job)
 
-    try:
-        dispatcher = ParserDispatcher()
-        normalizer = DocumentNormalizer(target_tokens=500, overlap_tokens=60)
-        parsed_doc = dispatcher.dispatch(
-            file_path=target_path,
-            document_id=str(doc_id),
-            document_version_id=str(version_id),
-        )
-
-        sections, chunks = normalizer.normalize(parsed_doc, version_id)
-        if not chunks:
-            doc.status = "error"
-            version.parse_status = "empty"
-            await session.commit()
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Unable to extract text or tabular chunks from the document.",
-            )
-
-        chunk_store = ChunkStore(session)
-        await chunk_store.store(
-            document_version_id=version_id,
-            section_dicts=sections,
-            chunks=chunks,
-        )
-
-        settings = get_settings()
-        qdrant_client = create_qdrant_client(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
-        dense_embedder = FastEmbedDenseEmbedder()
-        sparse_embedder = BM25SparseEmbedder()
-        indexer = QdrantIndexer(
-            client=qdrant_client,
-            dense_embedder=dense_embedder,
-            sparse_embedder=sparse_embedder,
-            collection_name="enterprise_rag_chunks",
-        )
-        doc_meta = {
-            "document_id": str(doc_id),
-            "company": meta.organization,
-            "year": meta.report_year,
-            "document_type": meta.document_type,
-        }
-        indexed_count = indexer.index_chunks(
-            chunks=chunks,
-            document_metadata=doc_meta,
-            batch_size=64,
-        )
-
-        doc.status = "ready"
-        version.parse_status = "completed"
-
-        await record_audit_log(
-            session=session,
-            action="document:upload_ingest",
-            resource_type="document",
-            user_id=admin_user.id,
-            resource_id=doc_id,
-            client_ip=get_client_ip(request),
-            metadata={
-                "title": doc.title,
-                "filename": safe_name,
-                "chunks_indexed": indexed_count,
-                "sections_extracted": len(sections),
-            },
-        )
-        await session.commit()
-
-        return {
-            "status": "ready",
-            "document_id": str(doc_id),
-            "version_id": str(version_id),
+    await record_audit_log(
+        session=session,
+        action="document:upload_queued",
+        resource_type="document",
+        user_id=admin_user.id,
+        resource_id=doc_id,
+        client_ip=get_client_ip(request),
+        metadata={
             "title": doc.title,
-            "organization": doc.organization,
-            "document_type": doc.document_type,
-            "report_year": doc.report_year,
             "filename": safe_name,
-            "file_size": len(content),
-            "sections_count": len(sections),
-            "chunks_count": indexed_count,
-            "message": "Document uploaded, parsed, chunked, and vector-indexed successfully. Ready for RAG retrieval.",
-        }
-    except HTTPException:
-        raise
-    except Exception as exc:
-        await session.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ingestion processing failed: {exc}",
-        ) from exc
+            "job_id": str(job_id),
+        },
+    )
+    await session.commit()
+
+    # Launch background processing pipeline
+    asyncio.create_task(process_ingestion_job(job_id))
+
+    return {
+        "status": "processing",
+        "job_id": str(job_id),
+        "document_id": str(doc_id),
+        "version_id": str(version_id),
+        "title": doc.title,
+        "organization": doc.organization,
+        "document_type": doc.document_type,
+        "report_year": doc.report_year,
+        "filename": safe_name,
+        "file_size": len(content),
+        "message": f"Document '{doc.title}' uploaded successfully. Multi-stage ingestion pipeline is running in the background.",
+    }
 
 
 @router.get(
@@ -420,20 +399,26 @@ async def get_chunk_detail(
     """Retrieve chunk details for evidence viewer with access check (Phase 15)."""
     service = DocumentService(session)
     chunk = await service.get_chunk_detail(chunk_id)
-    from apps.api.app.models.document import DocumentVersion
+    from apps.api.app.models.document import DocumentVersion, Document
 
-    v_query = select(DocumentVersion.document_id).where(
-        DocumentVersion.id == chunk.document_version_id
+    v_query = (
+        select(DocumentVersion.document_id, Document.title, DocumentVersion.file_name)
+        .join(Document, DocumentVersion.document_id == Document.id)
+        .where(DocumentVersion.id == chunk.document_version_id)
     )
     v_res = await session.execute(v_query)
-    doc_id = v_res.scalar_one_or_none()
-    if doc_id:
+    doc_row = v_res.first()
+    if doc_row:
+        doc_id, doc_title, file_name = doc_row
         await check_document_access(
             document_id=doc_id,
             required_permission=AccessPermission.READ,
             current_user=current_user,
             session=session,
         )
+        chunk.document_id = doc_id
+        chunk.document_title = doc_title
+        chunk.file_name = file_name
     return chunk
 
 
@@ -483,4 +468,6 @@ async def ingest_document(
     service = IngestionService(session)
     result = await service.create_ingestion_job(document_id=document_id)
     await session.commit()
+    job_uuid = uuid.UUID(result["job_id"])
+    asyncio.create_task(process_ingestion_job(job_uuid))
     return result

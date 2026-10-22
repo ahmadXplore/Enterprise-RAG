@@ -14,8 +14,8 @@ class UserRepository(BaseRepository[User]):
         super().__init__(User, session)
 
     async def get_by_email(self, email: str) -> User | None:
-        """Fetch user by unique email address."""
-        query = select(User).where(User.email == email).options(selectinload(User.roles))
+        """Fetch user by unique email address case-insensitively."""
+        query = select(User).where(User.email.ilike(email.strip())).options(selectinload(User.roles))
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
@@ -26,8 +26,8 @@ class UserRepository(BaseRepository[User]):
         return result.scalar_one_or_none()
 
     async def get_role_by_name(self, name: str) -> Role | None:
-        """Fetch role by name (e.g., ADMIN, ANALYST, VIEWER)."""
-        query = select(Role).where(Role.name == name)
+        """Fetch role by name (e.g., ADMIN, ANALYST, VIEWER) case-insensitively."""
+        query = select(Role).where(Role.name.ilike(name))
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
@@ -36,3 +36,16 @@ class UserRepository(BaseRepository[User]):
         query = select(Role)
         result = await self.session.execute(query)
         return result.scalars().all()
+
+    async def list_all(self, limit: int = 100, offset: int = 0) -> Sequence[User]:
+        """Fetch all users ordered by creation date."""
+        query = (
+            select(User)
+            .options(selectinload(User.roles))
+            .order_by(User.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
+

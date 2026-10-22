@@ -33,6 +33,7 @@ class GenerationResult:
     query_type: str = "DIRECT"
     # token_usage kept server-side only; not returned in API response
     token_usage: dict = field(default_factory=dict)
+    evidence: list[RetrievalResult] = field(default_factory=list)
 
 
 class CitationValidationError(Exception):
@@ -82,6 +83,7 @@ class RAGGenerator:
         evidence: list[RetrievalResult],
         query_type: str = "DIRECT",
         extra_system: str | None = None,
+        conversation_history: list[dict[str, str]] | None = None,
     ) -> GenerationResult:
         """Run grounded generation against validated evidence.
 
@@ -90,6 +92,7 @@ class RAGGenerator:
             evidence: Access-controlled retrieved chunks.
             query_type: Classified query type for logging / response.
             extra_system: Optional extra system-prompt text for specialised workflows.
+            conversation_history: Optional recent conversation turns.
 
         Returns:
             GenerationResult with validated citations only.
@@ -132,6 +135,7 @@ class RAGGenerator:
             question=question,
             evidence=safe_evidence,
             extra_system=extra_system,
+            conversation_history=conversation_history,
         )
 
         try:
@@ -155,7 +159,13 @@ class RAGGenerator:
         abstained = bool(parsed.get("abstained", False))
 
         if not answer:
-            answer = "The model did not return a structured answer. Evidence may be insufficient."
+            # This can happen when the LLM provider's content filter blocked the output
+            # (e.g. finish_reason=content_filter) or when the model returned empty JSON
+            answer = (
+                "I'm sorry, but I was unable to generate a response for this question. "
+                "This may be due to content filtering or insufficient evidence in the documents. "
+                "Please try rephrasing your question."
+            )
             abstained = True
             grounded = False
 

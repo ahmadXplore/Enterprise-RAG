@@ -216,6 +216,7 @@ class TestRouteAfterEvidenceAssessment:
             "tool_calls": 4,
             "query_type": "COMPARISON",
             "requires_calculation": False,
+            "entities": ["Company A", "Company B"],
         }
         route = _route_after_evidence_assessment(state, max_retrieval_attempts=3, max_tool_calls=10)
         assert route == "retrieve_comparison"

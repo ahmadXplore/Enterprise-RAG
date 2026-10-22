@@ -11,8 +11,11 @@ import { Spinner, EmptyState, ErrorState } from "@/components/ui/states";
 import { documentsApi } from "@/lib/api";
 import { DocumentRead, PaginatedResponse } from "@/lib/types";
 import { isAdmin } from "@/lib/auth";
+import { useModal } from "@/components/ui/modal-context";
 
 export default function DocumentsPage() {
+  const modal = useModal();
+  const [mounted, setMounted] = React.useState(false);
   const [data, setData] = React.useState<PaginatedResponse<DocumentRead> | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -23,7 +26,11 @@ export default function DocumentsPage() {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [ingestingIds, setIngestingIds] = React.useState<Set<string>>(new Set());
 
-  const admin = isAdmin();
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const admin = mounted ? isAdmin() : false;
 
   const fetchDocuments = React.useCallback(async () => {
     setLoading(true);
@@ -52,16 +59,40 @@ export default function DocumentsPage() {
     setIngestingIds((prev) => new Set(prev).add(docId));
     try {
       await documentsApi.ingest(docId);
-      // Refresh list
+      modal.toast.success("Ingestion pipeline started in background.");
       await fetchDocuments();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to start ingestion job");
+      modal.toast.error(err instanceof Error ? err.message : "Failed to start ingestion job");
     } finally {
       setIngestingIds((prev) => {
         const next = new Set(prev);
         next.delete(docId);
         return next;
       });
+    }
+  };
+
+  const handleDelete = async (docId: string, docTitle?: string) => {
+    const confirmed = await modal.confirm({
+      title: "Confirm Document Deletion",
+      message: (
+        <span>
+          Are you sure you want to permanently delete{" "}
+          <strong className="text-foreground">{docTitle || "this document"}</strong> from the corpus?
+          All extracted sections, text chunks, and vector index embeddings in Qdrant will be removed.
+        </span>
+      ),
+      confirmText: "Delete Document",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
+
+    try {
+      await documentsApi.delete(docId);
+      modal.toast.success(`Document "${docTitle || "Document"}" deleted successfully.`);
+      await fetchDocuments();
+    } catch (err: unknown) {
+      modal.toast.error(err instanceof Error ? err.message : "Deletion failed");
     }
   };
 
@@ -85,10 +116,11 @@ export default function DocumentsPage() {
               <RefreshCw className="h-3.5 w-3.5" /> Refresh
             </Button>
             {admin && (
-              <Button size="sm" onClick={() => setIsModalOpen(true)} className="gap-1 text-xs">
-                <Plus className="h-3.5 w-3.5" /> Register Document
+              <Button size="sm" onClick={() => setIsModalOpen(true)} className="gap-1.5 text-xs shadow-sm">
+                <Plus className="h-3.5 w-3.5" /> Upload Document
               </Button>
             )}
+
           </div>
         </div>
 
@@ -167,6 +199,7 @@ export default function DocumentsPage() {
             <DocumentTable
               documents={data.items}
               onIngest={handleIngest}
+              onDelete={handleDelete}
               ingestingIds={ingestingIds}
             />
 

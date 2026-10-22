@@ -298,8 +298,11 @@ class ComparisonWorkflow:
             filters.update(extra_filters)
         # Narrow by entity name to prefer entity-specific evidence
         entity_query = f"{entity} {query}"
-        results, _ = self._retriever.retrieve(query=entity_query, filters=filters)
-        return results
+        try:
+            results, _ = self._retriever.retrieve(query=entity_query, filters=filters)
+            return results
+        except Exception:
+            return []
 
     async def run(
         self,

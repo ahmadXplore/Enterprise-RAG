@@ -13,6 +13,8 @@ import {
   Briefcase,
   LogOut,
   Database,
+  Activity,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearToken, getUser, isAdmin, isAnalyst } from "@/lib/auth";
@@ -31,6 +33,8 @@ const navItems: NavItem[] = [
   { label: "Chat", href: "/chat", icon: MessageSquare },
   { label: "Documents", href: "/documents", icon: FileText },
   { label: "Evaluations", href: "/evaluations", icon: BarChart3, analystOnly: true },
+  { label: "Admin — Observability", href: "/admin/observability", icon: Activity, adminOnly: true },
+  { label: "Admin — Audit Logs", href: "/admin/audit-logs", icon: ScrollText, adminOnly: true },
   { label: "Admin — Users", href: "/admin/users", icon: Users, adminOnly: true },
   { label: "Admin — Jobs", href: "/admin/jobs", icon: Briefcase, adminOnly: true },
   { label: "Settings", href: "/settings", icon: Settings },

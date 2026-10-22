@@ -44,6 +44,9 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setServerError(null);
     try {
+      // Purge any existing session or legacy chat keys to prevent cross-account pollution
+      clearToken();
+
       const res = await authApi.login(data);
       setToken(res.access_token);
 

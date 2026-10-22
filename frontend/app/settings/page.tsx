@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { getUser, clearToken, isAdmin } from "@/lib/auth";
 import { documentsApi, healthApi } from "@/lib/api";
 import type { DocumentRead, CorpusStats } from "@/lib/types";
+import { useModal } from "@/components/ui/modal-context";
 
 interface UploadResult {
   status: string;
@@ -46,6 +47,7 @@ interface UploadResult {
 }
 
 export default function SettingsPage() {
+  const modal = useModal();
   const [mounted, setMounted] = React.useState(false);
   const [stats, setStats] = React.useState<CorpusStats | null>(null);
   const [recentDocs, setRecentDocs] = React.useState<DocumentRead[]>([]);
@@ -181,13 +183,27 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDelete = async (docId: string) => {
-    if (!confirm("Are you sure you want to delete this document from the corpus?")) return;
+  const handleDelete = async (docId: string, docTitle?: string) => {
+    const confirmed = await modal.confirm({
+      title: "Confirm Document Deletion",
+      message: (
+        <span>
+          Are you sure you want to permanently delete{" "}
+          <strong className="text-foreground">{docTitle || "this document"}</strong> from the corpus?
+          All extracted sections, text chunks, and vector index embeddings in Qdrant will be removed.
+        </span>
+      ),
+      confirmText: "Delete Document",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
+
     try {
       await documentsApi.delete(docId);
+      modal.toast.success(`Document "${docTitle || "Document"}" deleted successfully.`);
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Deletion failed");
+      modal.toast.error(err instanceof Error ? err.message : "Deletion failed");
     }
   };
 
@@ -328,232 +344,27 @@ export default function SettingsPage() {
               </Card>
             </div>
 
-            {/* Ingestion & Upload Card */}
-            <Card className="border-primary/30 bg-card shadow-md relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-              
-              <CardHeader className="pb-3 border-b border-border/80">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <UploadCloud className="h-4 w-4 text-primary" />
-                    <span>Admin Document Ingestion Hub</span>
-                  </CardTitle>
-                  <Badge variant="outline" className="border-primary/40 text-primary text-[10px]">
-                    Automatic Pipeline: Parse ➔ Chunk ➔ Index ➔ Ready
-                  </Badge>
+            {/* Ingestion & Upload Moved Notice */}
+            <Card className="border-border bg-card p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <UploadCloud className="h-5 w-5" />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Upload educational research papers, syllabi, datasets, or spreadsheets. Files are parsed, normalized, indexed into Qdrant, and immediately usable for queries and citations.
-                </p>
-              </CardHeader>
-
-              <CardContent className="p-6 space-y-5">
-                <form onSubmit={handleUploadAndProcess} className="space-y-5">
-                  {/* Drag and Drop Dropzone */}
-                  <div
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3 ${
-                      dragActive
-                        ? "border-primary bg-primary/10 shadow-lg"
-                        : file
-                        ? "border-emerald-500/50 bg-emerald-500/5"
-                        : "border-border hover:border-primary/50 hover:bg-muted/30"
-                    }`}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,.docx,.csv,.xlsx,.txt"
-                      className="hidden"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          handleFileSelected(e.target.files[0]);
-                        }
-                      }}
-                    />
-
-                    {file ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="h-12 w-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                          {getFormatIcon(file.name)}
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-sm font-medium text-foreground">{file.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {(file.size / 1024).toFixed(1)} KB • Ready to process
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFile(null);
-                            if (fileInputRef.current) fileInputRef.current.value = "";
-                          }}
-                          className="text-xs text-muted-foreground hover:text-destructive h-7 px-2 mt-1"
-                        >
-                          Change File
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-center">
-                        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                          <UploadCloud className="h-6 w-6" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">
-                            Drag and drop file here, or <span className="text-primary underline">browse</span>
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Supported: <span className="font-mono text-[11px] text-foreground/80">PDF, DOCX, CSV, XLSX, TXT</span> (Max 50MB)
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Metadata Fields */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <Input
-                        label="Document Title (Optional)"
-                        placeholder="Auto-detected from filename"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        label="Institution / Organization"
-                        placeholder="e.g. MIT, Stanford, OECD, NCES"
-                        value={organization}
-                        onChange={(e) => setOrganization(e.target.value)}
-                        className="text-xs"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-muted-foreground block">
-                        Document Type
-                      </label>
-                      <select
-                        value={documentType}
-                        onChange={(e) => setDocumentType(e.target.value)}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      >
-                        <option value="research_paper">Research Paper (PDF/DOCX)</option>
-                        <option value="syllabus">Course Syllabus (DOCX/PDF)</option>
-                        <option value="dataset">Educational Dataset (CSV)</option>
-                        <option value="spreadsheet">Statistical Workbook (XLSX)</option>
-                        <option value="educational">Educational Resource (General)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Input
-                        label="Academic / Report Year"
-                        type="number"
-                        placeholder="e.g. 2024"
-                        value={reportYear}
-                        onChange={(e) => setReportYear(e.target.value)}
-                        className="text-xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Submit Button & Progress */}
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-border">
-                    <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                      <span>Role access is automatically granted to all analysts upon ingestion.</span>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      disabled={!file || isProcessing}
-                      className="gap-2 text-xs w-full sm:w-auto min-w-[200px]"
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Processing Document...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4" />
-                          <span>Upload & Ingest Document</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-
-                {/* Real-Time Processing Stage Feedback */}
-                {isProcessing && (
-                  <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 space-y-2 animate-pulse">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Live Ingestion Pipeline Active</span>
-                    </div>
-                    <p className="text-xs font-mono text-muted-foreground">{processingStage}</p>
-                    <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-primary h-full animate-[indeterminate_1.5s_infinite_linear]" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Success Banner */}
-                {uploadResult && (
-                  <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>Document Successfully Processed and Vector-Indexed!</span>
-                      </div>
-                      <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-[10px]">
-                        Status: Ready
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Title</span>
-                        <span className="font-medium text-foreground">{uploadResult.title}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Sections Extracted</span>
-                        <span className="font-mono text-foreground">{uploadResult.sections_count ?? 1}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Chunks in Qdrant</span>
-                        <span className="font-mono text-emerald-400 font-bold">{uploadResult.chunks_count ?? 0}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Availability</span>
-                        <span className="text-emerald-400 flex items-center gap-1">
-                          <Check className="h-3 w-3" /> Usable in RAG
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Error Banner */}
-                {errorMessage && (
-                  <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-3 text-xs text-destructive">
-                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-semibold">Ingestion Failed</p>
-                      <p className="text-muted-foreground mt-0.5">{errorMessage}</p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Document Upload & Security Ingestion</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Direct multi-format file uploads (PDF, DOCX, CSV, XLSX) and automated malware/corruption security scanning are now managed directly in the Document Library.
+                  </p>
+                </div>
+              </div>
+              <a href="/documents">
+                <Button size="sm" className="gap-1.5 text-xs shrink-0 shadow-xs">
+                  <span>Open Document Library</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </a>
             </Card>
+
 
             {/* Ingested Documents Corpus Browser */}
             <Card className="border-border bg-card shadow-sm">
@@ -628,7 +439,7 @@ export default function SettingsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDelete(doc.id)}
+                                onClick={() => handleDelete(doc.id, doc.title)}
                                 className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                 title="Delete document"
                               >

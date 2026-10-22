@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ExternalLink, Play, CheckCircle2, Clock } from "lucide-react";
+import { ExternalLink, Play, CheckCircle2, Clock, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DocumentRead } from "@/lib/types";
@@ -11,11 +11,23 @@ import { isAdmin } from "@/lib/auth";
 export interface DocumentTableProps {
   documents: DocumentRead[];
   onIngest?: (docId: string) => void;
+  onDelete?: (docId: string, docTitle?: string) => void;
   ingestingIds?: Set<string>;
 }
 
-export function DocumentTable({ documents, onIngest, ingestingIds = new Set() }: DocumentTableProps) {
-  const admin = isAdmin();
+export function DocumentTable({
+  documents,
+  onIngest,
+  onDelete,
+  ingestingIds = new Set(),
+}: DocumentTableProps) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const admin = mounted ? isAdmin() : false;
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
@@ -91,6 +103,17 @@ export function DocumentTable({ documents, onIngest, ingestingIds = new Set() }:
                             <span>Ingest</span>
                           </>
                         )}
+                      </Button>
+                    )}
+                    {admin && onDelete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDelete(doc.id, doc.title)}
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        title="Delete document"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     )}
                   </td>

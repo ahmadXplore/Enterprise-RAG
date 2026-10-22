@@ -16,7 +16,10 @@ from packages.retrieval.models import RetrievalResult
 class GraphState(TypedDict, total=False):
     # ── Input (set once, never mutated) ──────────────────────────────────────
     question: str
+    conversation_history: list[dict[str, str]]  # list of {role, content}
+    contextualized_question: str | None  # resolved standalone question after multi-turn coreference
     authorized_document_ids: list[str]  # pre-resolved, never from user input
+    authorized_documents: list[dict[str, str]]  # list of {id, title, organization}
     user_id: str  # for audit / logging only
     base_filters: dict[str, Any]  # company/year/type filters from request
 

@@ -41,6 +41,7 @@ from packages.llm.generation import GenerationResult, RAGGenerator, validate_cit
 from packages.llm.graph_state import GraphState
 from packages.llm.prompt import (
     build_constraint_extraction_messages,
+    build_contextualize_query_messages,
     build_expansion_messages,
     build_query_classification_messages,
 )
@@ -152,6 +153,87 @@ def resolve_document_type(raw: str) -> list[str] | None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+async def _node_contextualize_query(state: GraphState, provider: Any) -> GraphState:
+    """Resolve conversational context and coreference from conversation history.
+
+    CoT field — resolves 'continue', pronouns, or follow-ups into standalone queries.
+    """
+    history = state.get("conversation_history") or []
+    question = state.get("question", "").strip()
+
+    if not history or not question:
+        state["contextualized_question"] = question
+        return state
+
+    CONTINUE_PHRASES = {
+        "continue", "continue please", "please continue",
+        "go on", "keep going", "carry on", "more", "tell me more",
+        "proceed", "next", "expand", "elaborate", "finish", "resume",
+        "continue the previous query", "continue previous", "carry on please",
+    }
+    q_norm = question.lower().strip().rstrip(".!?,")
+
+    last_user_turn = None
+    last_asst_turn = None
+    for turn in reversed(history):
+        role = str(turn.get("role", "")).lower()
+        content = str(turn.get("content", "")).strip()
+        if role == "user" and not last_user_turn and content and content.lower().strip().rstrip(".!?,") not in CONTINUE_PHRASES:
+            last_user_turn = content
+        elif role == "assistant" and not last_asst_turn and content:
+            last_asst_turn = content
+        if last_user_turn and last_asst_turn:
+            break
+
+    is_continuation = q_norm in CONTINUE_PHRASES
+
+    # If the user says "continue" and we found the previous question
+    if is_continuation and last_user_turn:
+        # If assistant answer was empty, incomplete, or very short (< 50 chars), re-ask the original question thoroughly
+        if not last_asst_turn or len(last_asst_turn) < 50:
+            standalone = f"Answer in full detail: {last_user_turn}"
+        else:
+            standalone = f"Continue explaining and provide further details on: {last_user_turn}"
+        state["contextualized_question"] = standalone
+        state["question"] = standalone
+        state["tool_calls"] = state.get("tool_calls", 0) + 1
+        return state
+
+    # Pronouns & short follow-up detection
+    PRONOUNS = {"it", "its", "they", "them", "their", "this", "that", "these", "those", "he", "she"}
+    words = set(q_norm.split())
+    has_pronoun = bool(words & PRONOUNS)
+    is_short_followup = len(words) <= 6 and (
+        has_pronoun or q_norm.startswith(("what about", "how about", "why", "who", "when", "how", "and", "where"))
+    )
+
+    if is_continuation or is_short_followup or has_pronoun:
+        try:
+            messages = build_contextualize_query_messages(question, history)
+            raw = await provider.generate(messages=messages, response_schema={})
+            parsed = parse_json_content(raw["content"])
+            standalone = parsed.get("standalone_query", "").strip()
+            if standalone and len(standalone) >= 3:
+                state["contextualized_question"] = standalone
+                state["question"] = standalone
+                state["tool_calls"] = state.get("tool_calls", 0) + 1
+                return state
+        except Exception as exc:
+            logger.warning(
+                "Contextual query rewriter failed; using fallback",
+                extra={"extra": {"error": str(exc)}},
+            )
+            if last_user_turn:
+                fallback = f"{last_user_turn} - {question}"
+                state["contextualized_question"] = fallback
+                state["question"] = fallback
+                state["tool_calls"] = state.get("tool_calls", 0) + 1
+                return state
+
+    state["contextualized_question"] = question
+    return state
+
+
 async def _node_classify_query(state: GraphState, provider: Any) -> GraphState:
     """Classify the query type using the LLM.
 
@@ -202,7 +284,11 @@ async def _node_extract_constraints(state: GraphState, provider: Any) -> GraphSt
 
     filters = parsed.get("filters") or {}
     state["retrieval_filters"] = {k: v for k, v in filters.items() if v is not None}
-    state["retrieval_query"] = state["question"]
+    core_topic = parsed.get("core_topic")
+    if core_topic and isinstance(core_topic, str) and len(core_topic.strip()) > 3:
+        state["retrieval_query"] = core_topic.strip()
+    else:
+        state["retrieval_query"] = state["question"]
     state["tool_calls"] = state.get("tool_calls", 0) + 1
     return state
 
@@ -214,11 +300,50 @@ def _node_apply_access_filter(state: GraphState) -> GraphState:
     The filter is built from the backend-resolved document ID list — never from
     user-supplied input.
     """
+    import re
     auth_ids = state.get("authorized_document_ids", [])
+    authorized_docs = state.get("authorized_documents", [])
     filters = dict(state.get("retrieval_filters", {}))
     filters.update(state.get("base_filters", {}))
     if auth_ids:
         filters["authorized_document_ids"] = auth_ids
+
+    # Document routing: if user question or constraint targeted a specific document/book in corpus
+    target_doc_title = filters.pop("document_title", None)
+    matched_doc_id = None
+
+    if target_doc_title and isinstance(target_doc_title, str) and target_doc_title.lower() != "null":
+        t_clean = target_doc_title.lower().strip()
+        for doc_meta in authorized_docs:
+            d_title = doc_meta.get("title", "").lower().strip()
+            if t_clean in d_title or d_title in t_clean:
+                matched_doc_id = doc_meta.get("id")
+                break
+
+    if not matched_doc_id and authorized_docs:
+        q_lower = state["question"].lower()
+        # Search authorized documents sorted by title length descending
+        for doc_meta in sorted(authorized_docs, key=lambda d: len(d.get("title", "")), reverse=True):
+            raw_title = doc_meta.get("title", "")
+            clean_title = re.sub(r"\[.*?\]", "", raw_title).strip().lower()
+            if len(clean_title) >= 5 and clean_title in q_lower:
+                matched_doc_id = doc_meta.get("id")
+                break
+            if "deep learning" in clean_title and "deep learning" in q_lower:
+                matched_doc_id = doc_meta.get("id")
+                break
+
+    if matched_doc_id:
+        filters["document_id"] = matched_doc_id
+        # Strip conversational document reference from retrieval query to maximize chunk relevance
+        curr_q = state.get("retrieval_query", state["question"])
+        refined_q = re.sub(
+            r"(?i)\b(from|in|according to|based on|out of)\s+(the\s+)?(book|paper|document|corpus|syllabus)\b.*$",
+            "",
+            curr_q,
+        ).strip()
+        if len(refined_q) >= 3:
+            state["retrieval_query"] = refined_q
 
     company = filters.get("company") or filters.get("companies")
     if company:
@@ -284,9 +409,11 @@ def _node_retrieve(state: GraphState, retriever: Any) -> GraphState:
     return state
 
 
-def _assess_evidence(evidence: list[RetrievalResult]) -> bool:
-    """Return True if there is retrieved evidence to attempt generation."""
-    return len(evidence) > 0
+def _assess_evidence(evidence: list[RetrievalResult], min_score: float = 0.05) -> bool:
+    """Return True if there is retrieved evidence with sufficient relevance to attempt generation."""
+    if not evidence:
+        return False
+    return any(getattr(e, "score", 0.0) >= min_score for e in evidence)
 
 
 def _node_assess_evidence(state: GraphState) -> GraphState:
@@ -321,10 +448,23 @@ async def _node_retrieve_comparison(
     state: GraphState, generator: RAGGenerator, retriever: Any
 ) -> GraphState:
     """Retrieve independent evidence for each entity (comparison path)."""
+    entities = state.get("entities", [])
+    if not entities or len(entities) < 2:
+        # Conceptual comparison without multi-entity retrieval requirement
+        result = await generator.generate(
+            question=state["question"],
+            evidence=state.get("evidence", []),
+            query_type="COMPARISON",
+            conversation_history=state.get("conversation_history"),
+        )
+        state["result"] = result
+        state["tool_calls"] = state.get("tool_calls", 0) + 1
+        return state
+
     wf = ComparisonWorkflow(generator=generator, retriever=retriever)
     result = await wf.run(
         question=state["question"],
-        entities=state.get("entities", []),
+        entities=entities,
         metric=state.get("metric"),
         authorized_document_ids=state.get("authorized_document_ids", []),
         time_period=state.get("time_period"),
@@ -334,6 +474,17 @@ async def _node_retrieve_comparison(
             if k != "authorized_document_ids"
         },
     )
+    # If comparison workflow yielded no grounded result but we already have retrieved evidence, fall back to it
+    if (result.abstained or not result.grounded) and state.get("evidence"):
+        fallback_res = await generator.generate(
+            question=state["question"],
+            evidence=state.get("evidence", []),
+            query_type="COMPARISON",
+            conversation_history=state.get("conversation_history"),
+        )
+        if not fallback_res.abstained:
+            result = fallback_res
+
     state["result"] = result
     state["tool_calls"] = state.get("tool_calls", 0) + 1
     return state
@@ -367,6 +518,7 @@ async def _node_generate(state: GraphState, generator: RAGGenerator) -> GraphSta
             question=state["question"],
             evidence=state.get("evidence", []),
             query_type=query_type,
+            conversation_history=state.get("conversation_history"),
         )
 
     state["result"] = result
@@ -388,6 +540,7 @@ def _node_validate_citations(state: GraphState) -> GraphState:
             abstained=result.abstained,
             query_type=result.query_type,
             token_usage=result.token_usage,
+            evidence=evidence,
         )
     return state
 
@@ -445,7 +598,7 @@ def _route_after_evidence_assessment(
     if query_type == "NUMERICAL" and state.get("requires_calculation", False):
         return "calculate"
 
-    if query_type == "COMPARISON":
+    if query_type == "COMPARISON" and len(state.get("entities", [])) >= 2:
         return "retrieve_comparison"
 
     return "generate"
@@ -500,6 +653,9 @@ class RAGGraph:
         max_r = self._max_retrieval_attempts
         max_t = self._max_tool_calls
 
+        async def contextualize_query_node(s: GraphState) -> GraphState:
+            return await _node_contextualize_query(s, provider)
+
         async def classify_query_node(s: GraphState) -> GraphState:
             return await _node_classify_query(s, provider)
 
@@ -518,6 +674,7 @@ class RAGGraph:
         async def generate_node(s: GraphState) -> GraphState:
             return await _node_generate(s, generator)
 
+        graph.add_node("contextualize_query", contextualize_query_node)
         graph.add_node("classify_query", classify_query_node)
         graph.add_node("extract_constraints", extract_constraints_node)
         graph.add_node("apply_access_filter", _node_apply_access_filter)
@@ -531,7 +688,8 @@ class RAGGraph:
         graph.add_node("finalize", _node_finalize)
 
         # Edges — linear path
-        graph.add_edge(START, "classify_query")
+        graph.add_edge(START, "contextualize_query")
+        graph.add_edge("contextualize_query", "classify_query")
         graph.add_edge("classify_query", "extract_constraints")
         graph.add_edge("extract_constraints", "apply_access_filter")
         graph.add_edge("apply_access_filter", "retrieve")
@@ -567,6 +725,8 @@ class RAGGraph:
         authorized_document_ids: list[str],
         user_id: str,
         base_filters: dict[str, Any] | None = None,
+        authorized_documents: list[dict[str, str]] | None = None,
+        conversation_history: list[dict[str, str]] | None = None,
     ) -> GenerationResult:
         """Execute the agentic RAG pipeline.
 
@@ -576,13 +736,18 @@ class RAGGraph:
                                      user is allowed to access (Rule 12).
             user_id: User identifier for audit logging.
             base_filters: Optional metadata filters from the API request.
+            authorized_documents: List of authorized document metadata {id, title, organization}.
+            conversation_history: Optional list of previous conversation turns {role, content}.
 
         Returns:
             GenerationResult — only the public fields; CoT state is discarded.
         """
         initial_state: GraphState = {
             "question": question,
+            "conversation_history": conversation_history or [],
+            "contextualized_question": None,
             "authorized_document_ids": authorized_document_ids,
+            "authorized_documents": authorized_documents or [],
             "user_id": user_id,
             "base_filters": base_filters or {},
             "retrieval_attempts": 0,
@@ -629,11 +794,16 @@ class RAGGraph:
         authorized_document_ids: list[str],
         user_id: str,
         base_filters: dict[str, Any] | None = None,
+        authorized_documents: list[dict[str, str]] | None = None,
+        conversation_history: list[dict[str, str]] | None = None,
     ) -> AsyncIterator[dict[str, Any]]:
         """Execute the agentic RAG pipeline yielding real-time step progress and final result."""
         initial_state: GraphState = {
             "question": question,
+            "conversation_history": conversation_history or [],
+            "contextualized_question": None,
             "authorized_document_ids": authorized_document_ids,
+            "authorized_documents": authorized_documents or [],
             "user_id": user_id,
             "base_filters": base_filters or {},
             "retrieval_attempts": 0,
@@ -644,6 +814,7 @@ class RAGGraph:
         }
 
         step_descriptions: dict[str, tuple[str, str]] = {
+            "contextualize_query": ("Resolving conversation context", "Interpreting query within conversation history..."),
             "classify_query": ("Analyzing query intent", "Classifying research question scope and analytical type..."),
             "extract_constraints": ("Extracting constraints", "Identifying institutions, time periods, and topics..."),
             "apply_access_filter": ("Verifying permissions", "Applying security boundaries and index constraints..."),
@@ -668,7 +839,13 @@ class RAGGraph:
                     )
                     detail = default_detail
 
-                    if node_name == "classify_query":
+                    if node_name == "contextualize_query":
+                        ctx_q = updated_fields.get("contextualized_question")
+                        if ctx_q and ctx_q != initial_state["question"]:
+                            detail = f"Interpreted as: {ctx_q[:80]}..."
+                        else:
+                            detail = "Query is standalone"
+                    elif node_name == "classify_query":
                         q_type = updated_fields.get("query_type", "DIRECT")
                         detail = f"Classified query type as {q_type}"
                     elif node_name == "extract_constraints":

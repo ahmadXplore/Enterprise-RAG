@@ -179,15 +179,20 @@ export default function SearchPage() {
           )}
         </div>
 
-        {/* Phase 15 Evidence Drawer */}
+        {/* Evidence Inspector Modal */}
         <EvidenceDrawer
           isOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
           chunkId={activeItem?.chunk_id ?? null}
           documentId={activeItem?.document_id}
+          documentTitle={activeItem?.document_title || activeItem?.company}
           evidenceText={activeItem?.text}
           page={activeItem?.page}
+          score={activeItem?.score}
+          rank={activeItem ? results.findIndex((r) => r.chunk_id === activeItem.chunk_id) + 1 : 1}
+          totalCandidates={results.length || 12}
         />
+
       </div>
     </AppShell>
   );

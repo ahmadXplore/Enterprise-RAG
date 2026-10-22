@@ -161,8 +161,23 @@ class GroqProvider:
             )
 
         data = resp.json()
+        choices = data.get("choices") or []
+        if not choices:
+            logger.warning(
+                "Groq returned empty choices list — possible content filter block",
+                extra={"extra": {"finish_reason": data.get("finish_reason")}},
+            )
+            return {"content": "", "model": data.get("model", self.model), "usage": data.get("usage", {})}
+        # content may be None when the provider's content filter blocks the output
+        finish_reason = choices[0].get("finish_reason")
+        if finish_reason == "content_filter":
+            logger.warning(
+                "Groq content filter blocked the LLM response",
+                extra={"extra": {"finish_reason": finish_reason, "model": self.model}},
+            )
+        content = choices[0].get("message", {}).get("content") or ""
         return {
-            "content": data["choices"][0]["message"]["content"],
+            "content": content,
             "model": data.get("model", self.model),
             "usage": data.get("usage", {}),
         }
@@ -214,8 +229,23 @@ class OpenRouterProvider:
             )
 
         data = resp.json()
+        choices = data.get("choices") or []
+        if not choices:
+            logger.warning(
+                "OpenRouter returned empty choices list — possible content filter block",
+                extra={"extra": {"data_keys": list(data.keys())}},
+            )
+            return {"content": "", "model": data.get("model", self.model), "usage": data.get("usage", {})}
+        # content may be None when the provider's content filter blocks the output
+        finish_reason = choices[0].get("finish_reason")
+        if finish_reason == "content_filter":
+            logger.warning(
+                "OpenRouter content filter blocked the LLM response",
+                extra={"extra": {"finish_reason": finish_reason, "model": self.model}},
+            )
+        content = choices[0].get("message", {}).get("content") or ""
         return {
-            "content": data["choices"][0]["message"]["content"],
+            "content": content,
             "model": data.get("model", self.model),
             "usage": data.get("usage", {}),
         }
@@ -260,8 +290,10 @@ class OllamaProvider:
             )
 
         data = resp.json()
+        # content may be None when Ollama's model returns an empty generation
+        content = (data.get("message") or {}).get("content") or ""
         return {
-            "content": data["message"]["content"],
+            "content": content,
             "model": data.get("model", self.model),
             "usage": {
                 "prompt_tokens": data.get("prompt_eval_count", 0),

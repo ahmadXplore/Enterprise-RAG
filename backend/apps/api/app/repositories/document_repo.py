@@ -1,4 +1,5 @@
 """Document and Chunk repository with Pre-Retrieval Authorization resolution."""
+import inspect
 import uuid
 from collections.abc import Sequence
 
@@ -65,6 +66,45 @@ class DocumentRepository(BaseRepository[Document]):
         )
         result = await self.session.execute(query)
         return list(result.scalars().all())
+
+    async def get_allowed_documents_metadata(
+        self,
+        user_id: uuid.UUID,
+        role_ids: list[uuid.UUID],
+        is_admin: bool = False,
+    ) -> list[dict[str, str]]:
+        """Resolve metadata (id, title, organization) of authorized documents."""
+        if is_admin:
+            query = select(Document.id, Document.title, Document.organization)
+            result = await self.session.execute(query)
+            raw_rows = result.all() if hasattr(result, "all") else []
+            if inspect.isawaitable(raw_rows):
+                raw_rows = await raw_rows
+            return [
+                {"id": str(r[0]), "title": r[1] or "", "organization": r[2] or ""}
+                for r in raw_rows
+                if len(r) >= 2
+            ]
+
+        access_conditions = [DocumentAccess.user_id == user_id]
+        if role_ids:
+            access_conditions.append(DocumentAccess.role_id.in_(role_ids))
+
+        query = (
+            select(Document.id, Document.title, Document.organization)
+            .join(DocumentAccess, Document.id == DocumentAccess.document_id)
+            .where(or_(*access_conditions))
+            .distinct()
+        )
+        result = await self.session.execute(query)
+        raw_rows = result.all() if hasattr(result, "all") else []
+        if inspect.isawaitable(raw_rows):
+            raw_rows = await raw_rows
+        return [
+            {"id": str(r[0]), "title": r[1] or "", "organization": r[2] or ""}
+            for r in raw_rows
+            if len(r) >= 2
+        ]
 
     async def list_chunks_for_version(
         self, document_version_id: uuid.UUID, limit: int = 100, offset: int = 0

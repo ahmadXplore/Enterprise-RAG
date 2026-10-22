@@ -19,6 +19,14 @@ class ConversationRead(BaseModel):
     updated_at: datetime
 
 
+class MessageCitationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    chunk_id: uuid.UUID | None = None
+    citation_label: str | None = None
+
+
 class MessageRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -30,3 +38,9 @@ class MessageRead(BaseModel):
     grounded: bool | None = None
     abstained: bool = False
     created_at: datetime
+    citations: list[MessageCitationRead] = []
+
+
+class ConversationDetailRead(ConversationRead):
+    messages: list[MessageRead] = []
+

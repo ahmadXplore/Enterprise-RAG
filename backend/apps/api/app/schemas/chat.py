@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 class ChatCitationItem(BaseModel):
     chunk_id: str
     document_id: str | None = None
+    document_title: str | None = None
     citation_label: str | None = None
     page: int | None = None
     evidence_text: str | None = None
@@ -28,6 +29,9 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000, description="User question or prompt")
     filters: dict[str, Any] | None = Field(
         None, description="Optional metadata constraints (company, year, etc.)"
+    )
+    history: list[dict[str, str]] | None = Field(
+        None, description="Recent conversation turns [{'role': 'user'|'assistant', 'content': '...'}]"
     )
 
 

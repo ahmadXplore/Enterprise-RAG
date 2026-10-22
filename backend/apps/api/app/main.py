@@ -3,6 +3,7 @@
 import uuid
 from contextlib import asynccontextmanager
 
+from apps.api.app.api.routes.admin import router as admin_router
 from apps.api.app.api.routes.auth import router as auth_router
 from apps.api.app.api.routes.chat import router as chat_router
 from apps.api.app.api.routes.documents import router as documents_router
@@ -129,3 +130,5 @@ app.include_router(search_router, prefix="/api/v1/search", tags=["search"])
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["chat"])
 app.include_router(query_router, prefix="/api/v1/query", tags=["query"])
 app.include_router(evaluations_router, prefix="/api/v1/evaluations", tags=["evaluations"])
+app.include_router(admin_router, prefix="/api/v1/admin", tags=["admin"])
+

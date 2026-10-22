@@ -89,6 +89,7 @@ def build_rag_messages(
     question: str,
     evidence: list[RetrievalResult],
     extra_system: str | None = None,
+    conversation_history: list[dict[str, str]] | None = None,
     max_context_tokens: int = _DEFAULT_MAX_CONTEXT_TOKENS,
 ) -> list[dict[str, str]]:
     """Construct the message list for a grounded RAG generation call.
@@ -101,6 +102,7 @@ def build_rag_messages(
         question: The user's question (already sanitised by the API layer).
         evidence: Ranked, access-controlled retrieved chunks.
         extra_system: Optional additional system instruction (used by workflows).
+        conversation_history: Optional recent conversation turns.
         max_context_tokens: Maximum total tokens for system + user content.
             Defaults to 6 000, leaving ample headroom for the LLM answer.
 
@@ -115,6 +117,16 @@ def build_rag_messages(
     if extra_system:
         system = f"{SYSTEM_PROMPT}\n\nADDITIONAL INSTRUCTIONS:\n{extra_system}"
 
+    history_prefix = ""
+    if conversation_history:
+        recent = [
+            f"{t.get('role', 'user').capitalize()}: {t.get('content', '')[:300]}"
+            for t in conversation_history[-4:]
+            if t.get("content")
+        ]
+        if recent:
+            history_prefix = "CONVERSATION CONTEXT:\n" + "\n".join(recent) + "\n\n"
+
     # Risk 4: trim chunks iteratively until the full prompt fits in the token budget.
     working_evidence = list(evidence)  # shallow copy — do not mutate caller's list
     original_count = len(working_evidence)
@@ -122,7 +134,7 @@ def build_rag_messages(
     while working_evidence:
         evidence_text = _format_evidence(working_evidence)
         user_content = (
-            f"EVIDENCE:\n{evidence_text}\n\nQUESTION:\n{question}\n\nRespond with valid JSON only."
+            f"EVIDENCE:\n{evidence_text}\n\n{history_prefix}QUESTION:\n{question}\n\nRespond with valid JSON only."
         )
         total_tokens = _count_tokens(system) + _count_tokens(user_content)
 
@@ -176,12 +188,19 @@ def build_constraint_extraction_messages(question: str, query_type: str) -> list
     """Build messages to extract structured constraints from the question (Phase 11)."""
     system = """\
 Extract structured search constraints from the user question.
+If the question specifies or references a specific book, document, filing, paper, or syllabus (e.g. "from the book deep learning", "in the syllabus for ML", "according to Apple 10-K"), extract the book/document title into "document_title", and the core subject into "core_topic" (e.g. "perceptrons").
 Respond ONLY with valid JSON:
 {
   "entities": ["<entity>", ...],
   "metric": "<metric or null>",
   "time_period": "<year/range or null>",
-  "filters": {"company": "<or null>", "year": <int or null>, "document_type": "<or null>"}
+  "filters": {
+    "company": "<or null>",
+    "year": <int or null>,
+    "document_type": "<or null>",
+    "document_title": "<target document or book title or null>"
+  },
+  "core_topic": "<main technical topic or question without source routing qualifiers, or null>"
 }
 Return null for any field that cannot be determined from the question.
 """
@@ -208,4 +227,40 @@ Respond ONLY with valid JSON: {"expanded_query": "<alternative query string>"}
     return [
         {"role": "system", "content": system},
         {"role": "user", "content": user},
+    ]
+
+
+def build_contextualize_query_messages(
+    question: str,
+    history: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    """Build messages to resolve conversational references (e.g. 'continue', 'what about Apple?') into a standalone query."""
+    system = """\
+You are an expert conversational query rewriter for an enterprise document search system.
+Given the chat history and the latest user message, rephrase the latest message into a standalone, fully-specified search query.
+RULES:
+1. If the user says "continue", "go on", "tell me more", "expand on that", or wants to resume an interrupted answer, rephrase it to continue and elaborate on the core question from the previous turn.
+2. If the user uses pronouns or references previous context (e.g., "what about their revenue?", "how does that compare?", "who is the author?"), resolve the references to explicitly name the entity or topic from the chat history.
+3. If the user message is already an independent, complete question, return it unchanged.
+4. Do NOT answer the question. Only output valid JSON with the rephrased standalone query.
+
+Respond ONLY with valid JSON:
+{"standalone_query": "<rephrased standalone query>"}
+"""
+    history_lines = []
+    for turn in history[-6:]:
+        role = str(turn.get("role", "user")).capitalize()
+        content = str(turn.get("content", "")).strip()
+        if content:
+            history_lines.append(f"{role}: {content[:500]}")
+    history_text = "\n".join(history_lines) if history_lines else "None"
+
+    user_content = (
+        f"CONVERSATION HISTORY:\n{history_text}\n\n"
+        f"LATEST USER MESSAGE:\n{question}\n\n"
+        "Provide the standalone query in JSON:"
+    )
+    return [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user_content},
     ]

@@ -20,6 +20,7 @@ import {
   Sparkles,
   ExternalLink,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { SectionTree } from "@/components/documents/section-tree";
@@ -32,8 +33,10 @@ import { documentsApi } from "@/lib/api";
 import { DocumentDetailRead, DocumentSectionRead, DocumentChunkRead } from "@/lib/types";
 import { isAdmin } from "@/lib/auth";
 import DOMPurify from "isomorphic-dompurify";
+import { useModal } from "@/components/ui/modal-context";
 
 function DocumentDetailContent() {
+  const modal = useModal();
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -158,11 +161,37 @@ function DocumentDetailContent() {
     setIsIngesting(true);
     try {
       await documentsApi.ingest(id);
+      modal.toast.success("Document ingestion pipeline started in the background.");
       await loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to trigger ingestion");
+      modal.toast.error(err instanceof Error ? err.message : "Failed to trigger ingestion");
     } finally {
       setIsIngesting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id || !doc) return;
+    const confirmed = await modal.confirm({
+      title: "Confirm Document Deletion",
+      message: (
+        <span>
+          Are you sure you want to permanently delete{" "}
+          <strong className="text-foreground">{doc.title || "this document"}</strong> from the corpus?
+          All extracted sections, text chunks, and vector index embeddings in Qdrant will be removed.
+        </span>
+      ),
+      confirmText: "Delete Document",
+      variant: "destructive",
+    });
+    if (!confirmed) return;
+
+    try {
+      await documentsApi.delete(id);
+      modal.toast.success("Document deleted successfully.");
+      router.push("/documents");
+    } catch (err: unknown) {
+      modal.toast.error(err instanceof Error ? err.message : "Deletion failed");
     }
   };
 
@@ -249,23 +278,34 @@ function DocumentDetailContent() {
           </Link>
 
           {admin && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleIngest}
-              disabled={isIngesting || doc?.status === "ready"}
-              className="gap-1.5 text-xs"
-            >
-              {isIngesting ? (
-                <>
-                  <Clock className="h-3.5 w-3.5 animate-spin" /> Ingesting...
-                </>
-              ) : (
-                <>
-                  <Play className="h-3.5 w-3.5" /> Ingest / Re-index
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleIngest}
+                disabled={isIngesting || doc?.status === "ready"}
+                className="gap-1.5 text-xs"
+              >
+                {isIngesting ? (
+                  <>
+                    <Clock className="h-3.5 w-3.5 animate-spin" /> Ingesting...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-3.5 w-3.5" /> Ingest / Re-index
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                className="gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive border-border"
+                title="Permanently delete document"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Delete Document
+              </Button>
+            </div>
           )}
         </div>
 

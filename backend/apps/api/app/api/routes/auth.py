@@ -51,6 +51,7 @@ async def register(
         email=user_in.email,
         password_hash=hashed_pw,
         full_name=user_in.full_name,
+        age=user_in.age,
         is_active=True,
         roles=roles,
     )

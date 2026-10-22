@@ -447,3 +447,79 @@ class TestAuditLogging:
             if doc_create_log.metadata_:
                 assert "password" not in doc_create_log.metadata_
                 assert "token" not in doc_create_log.metadata_
+
+
+class TestAdminUserManagement:
+    async def test_admin_create_block_reinstate_and_delete_user(
+        self, async_client, create_test_users
+    ):
+        """Admin can create, block, reinstate, and delete user accounts."""
+        admin = create_test_users["admin"]
+        viewer = create_test_users["viewer"]
+        admin_headers = auth_header(admin)
+        viewer_headers = auth_header(viewer)
+
+        # 1. Non-admin (viewer) forbidden from creating user
+        create_payload = {
+            "email": "newuser@corp.com",
+            "password": "Password123!",
+            "full_name": "New Test User",
+            "role": "ANALYST",
+        }
+        resp = await async_client.post("/api/v1/users", json=create_payload, headers=viewer_headers)
+        assert resp.status_code == 403
+
+        # 2. Admin successfully creates new user
+        resp = await async_client.post("/api/v1/users", json=create_payload, headers=admin_headers)
+        assert resp.status_code == 201
+        created_user = resp.json()
+        assert created_user["email"] == "newuser@corp.com"
+        assert created_user["is_active"] is True
+        assert any(r["name"].upper() == "ANALYST" for r in created_user["roles"])
+        user_id = created_user["id"]
+
+        # 3. Block user
+        block_resp = await async_client.patch(
+            f"/api/v1/users/{user_id}/status",
+            json={"is_active": False},
+            headers=admin_headers,
+        )
+        assert block_resp.status_code == 200
+        assert block_resp.json()["is_active"] is False
+
+        # 4. Blocked user cannot log in
+        login_resp = await async_client.post(
+            "/api/v1/auth/login",
+            json={"email": "newuser@corp.com", "password": "Password123!"},
+        )
+        assert login_resp.status_code == 401
+        err_msg = login_resp.json().get("error", {}).get("message", "") or login_resp.json().get("detail", "")
+        assert "inactive" in err_msg.lower()
+
+        # 5. Reinstate user
+        reinstate_resp = await async_client.patch(
+            f"/api/v1/users/{user_id}/status",
+            json={"is_active": True},
+            headers=admin_headers,
+        )
+        assert reinstate_resp.status_code == 200
+        assert reinstate_resp.json()["is_active"] is True
+
+        # 6. Admin cannot block or delete self
+        self_block_resp = await async_client.patch(
+            f"/api/v1/users/{admin.id}/status",
+            json={"is_active": False},
+            headers=admin_headers,
+        )
+        assert self_block_resp.status_code == 400
+
+        self_delete_resp = await async_client.delete(
+            f"/api/v1/users/{admin.id}",
+            headers=admin_headers,
+        )
+        assert self_delete_resp.status_code == 400
+
+        # 7. Delete user
+        del_resp = await async_client.delete(f"/api/v1/users/{user_id}", headers=admin_headers)
+        assert del_resp.status_code == 200
+

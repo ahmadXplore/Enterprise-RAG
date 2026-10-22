@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Spinner, EmptyState, ErrorState } from "@/components/ui/states";
 import { evaluationsApi } from "@/lib/api";
 import { EvaluationRunRead } from "@/lib/types";
+import { useModal } from "@/components/ui/modal-context";
 
 export default function EvaluationsPage() {
+  const modal = useModal();
   const [runs, setRuns] = React.useState<EvaluationRunRead[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -40,9 +42,10 @@ export default function EvaluationsPage() {
     setTriggering(true);
     try {
       await evaluationsApi.create("hybrid_rerank");
+      modal.toast.success("Benchmark evaluation run successfully launched in background.");
       await fetchRuns();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Could not launch evaluation run");
+      modal.toast.error(err instanceof Error ? err.message : "Could not launch evaluation run");
     } finally {
       setTriggering(false);
     }

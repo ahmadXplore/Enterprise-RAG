@@ -4,7 +4,7 @@ from datetime import datetime
 
 from apps.api.app.models.base import Base, TimestampMixin
 from apps.api.app.models.types import GUID
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # Association table for User and Role many-to-many relationship
@@ -35,6 +35,7 @@ class User(Base, TimestampMixin):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    age: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

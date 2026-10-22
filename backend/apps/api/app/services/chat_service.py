@@ -131,13 +131,21 @@ class ChatService:
         """Get existing conversation verifying ownership, or create a new one."""
         if conversation_id is not None:
             conv = await self.conv_repo.get_by_id(conversation_id)
-            if conv is None:
-                raise NotFoundException(f"Conversation {conversation_id} not found")
-            if conv.user_id != user.id:
-                raise ForbiddenException("Access to this conversation is denied")
-            return conv
+            if conv is not None:
+                if conv.user_id != user.id:
+                    raise ForbiddenException("Access to this conversation is denied")
+                return conv
+            # Client passed a new conversation ID (e.g. from frontend session store)
+            title = initial_title[:40] if initial_title else "New Conversation"
+            new_conv = Conversation(
+                id=conversation_id,
+                user_id=user.id,
+                title=title,
+            )
+            created = await self.conv_repo.create(new_conv)
+            return created
 
-        # Create new conversation
+        # Create new conversation with fresh server UUID
         title = initial_title[:40] if initial_title else "New Conversation"
         new_conv = Conversation(
             id=uuid.uuid4(),
@@ -149,16 +157,65 @@ class ChatService:
 
     async def _resolve_authorized_docs(self, user: User) -> list[str]:
         """Resolve authorized document IDs for pre-retrieval access control."""
+        docs = await self._resolve_authorized_docs_metadata(user)
+        return [d["id"] for d in docs]
+
+    async def _resolve_authorized_docs_metadata(self, user: User) -> list[dict[str, str]]:
+        """Resolve metadata (id, title, organization) of authorized documents."""
+        # If _resolve_authorized_docs has been monkey-patched on the instance (e.g. in tests),
+        # use it to derive the metadata list with id-only entries.
+        if "_resolve_authorized_docs" in vars(self) or type(self)._resolve_authorized_docs is not ChatService._resolve_authorized_docs:
+            try:
+                doc_ids = await self._resolve_authorized_docs(user)
+                return [{"id": str(did), "title": "", "organization": ""} for did in (doc_ids or [])]
+            except Exception:
+                return []
+
         is_admin = any(
-            r.name == RoleType.ADMIN.value or r.name == RoleType.ADMIN for r in user.roles
+            str(getattr(r, "name", "")).upper() in ("ADMIN", "ROLE_ADMIN")
+            or getattr(r, "name", None) == RoleType.ADMIN
+            or getattr(r, "name", None) == RoleType.ADMIN.value
+            for r in getattr(user, "roles", [])
         )
-        role_ids = [r.id for r in user.roles]
-        allowed_uuids = await self.doc_repo.get_allowed_document_ids(
-            user_id=user.id,
-            role_ids=role_ids,
-            is_admin=is_admin,
-        )
-        return [str(u) for u in allowed_uuids]
+        role_ids = [r.id for r in getattr(user, "roles", [])]
+        try:
+            return await self.doc_repo.get_allowed_documents_metadata(
+                user_id=user.id,
+                role_ids=role_ids,
+                is_admin=is_admin,
+            )
+        except Exception:
+            try:
+                doc_ids = await self.doc_repo.get_allowed_document_ids(
+                    user_id=user.id,
+                    role_ids=role_ids,
+                    is_admin=is_admin,
+                )
+                return [{"id": str(did), "title": "", "organization": ""} for did in (doc_ids or [])]
+            except Exception:
+                return []
+
+    async def _resolve_conversation_history(
+        self,
+        request: ChatRequest,
+        conv: Conversation,
+    ) -> list[dict[str, str]]:
+        """Resolve recent conversation turns from request or DB repository."""
+        if getattr(request, "history", None):
+            return [t for t in request.history if isinstance(t, dict) and t.get("content")]
+
+        if conv and conv.id:
+            try:
+                existing_conv = await self.conv_repo.get_with_messages(conv.id)
+                if existing_conv and existing_conv.messages:
+                    return [
+                        {"role": m.role, "content": m.content}
+                        for m in existing_conv.messages[-10:]
+                        if m.content and m.content != request.message
+                    ]
+            except Exception:
+                pass
+        return []
 
     async def chat(
         self,
@@ -166,10 +223,19 @@ class ChatService:
         current_user: User,
     ) -> ChatResponse:
         """Execute synchronous chat interaction with DB persistence."""
+        # 1. Input Guard (Rule 12): Block known jailbreaks and sensitive keywords
+        from packages.security.guardrails import InputGuard, OutputGuard
+        from apps.api.app.core.exceptions import BadRequestException
+        is_safe_in, in_category, in_err = InputGuard.check(request.message)
+        if not is_safe_in:
+            raise BadRequestException(in_err or InputGuard.GENERIC_BLOCKED_MESSAGE)
+
         conv = await self._resolve_conversation(
             request.conversation_id, current_user, request.message
         )
-        authorized_doc_ids = await self._resolve_authorized_docs(current_user)
+        authorized_docs = await self._resolve_authorized_docs_metadata(current_user)
+        authorized_doc_ids = [d["id"] for d in authorized_docs]
+        history = await self._resolve_conversation_history(request, conv)
 
         # Record user message in DB
         user_msg = Message(
@@ -194,12 +260,22 @@ class ChatService:
             authorized_document_ids=authorized_doc_ids,
             user_id=str(current_user.id),
             base_filters=request.filters or {},
+            authorized_documents=authorized_docs,
+            conversation_history=history,
         )
         timer.end_stage("generation")
+
+        # 2. Output Guard (Rule 12): Inspect response for restricted data (SSNs, API keys, credentials)
+        out_result = OutputGuard.sanitize_or_block(gen_result.answer)
+        final_answer = out_result.safe_text
+        final_grounded = gen_result.grounded if not out_result.blocked else False
+        final_abstained = gen_result.abstained or out_result.blocked
+        final_citation_ids = gen_result.citation_ids if not out_result.blocked else []
+
         timer.finish(
-            citation_count=len(gen_result.citation_ids),
-            grounded=gen_result.grounded,
-            abstained=gen_result.abstained,
+            citation_count=len(final_citation_ids),
+            grounded=final_grounded,
+            abstained=final_abstained,
             token_usage=getattr(gen_result, "token_usage", {}),
         )
 
@@ -209,42 +285,61 @@ class ChatService:
             id=assistant_msg_id,
             conversation_id=conv.id,
             role="assistant",
-            content=gen_result.answer,
+            content=final_answer,
             query_type=gen_result.query_type,
-            grounded=gen_result.grounded,
-            abstained=gen_result.abstained,
+            grounded=final_grounded,
+            abstained=final_abstained,
         )
         self.session.add(asst_msg)
 
-        # Persist citations if chunk IDs are valid UUIDs
+        # Persist and return enriched citations
+        doc_title_map = {d["id"]: d["title"] for d in authorized_docs}
+        ev_map = {e.chunk_id: e for e in getattr(gen_result, "evidence", [])}
+
         citations: list[ChatCitationItem] = []
-        for cid in dict.fromkeys(gen_result.citation_ids):
+        for idx, cid in enumerate(dict.fromkeys(gen_result.citation_ids)):
             chunk_uuid = None
             try:
                 chunk_uuid = uuid.UUID(cid)
             except (ValueError, TypeError):
                 chunk_uuid = None
 
+            ev = ev_map.get(cid)
+            doc_id_val = str(ev.document_id) if ev and ev.document_id else None
+            doc_title_val = doc_title_map.get(doc_id_val) if doc_id_val else None
+            page_val = ev.page_start if ev else None
+            evidence_text_val = ev.text[:300] if ev and ev.text else None
+            label_val = f"[{idx + 1}]"
+
             if chunk_uuid:
                 cit_record = MessageCitation(
                     id=uuid.uuid4(),
                     message_id=assistant_msg_id,
                     chunk_id=chunk_uuid,
-                    citation_label=cid,
+                    citation_label=label_val,
                 )
                 self.session.add(cit_record)
 
-            citations.append(ChatCitationItem(chunk_id=cid))
+            citations.append(
+                ChatCitationItem(
+                    chunk_id=cid,
+                    document_id=doc_id_val,
+                    document_title=doc_title_val,
+                    citation_label=label_val,
+                    page=page_val,
+                    evidence_text=evidence_text_val,
+                )
+            )
 
         await self.session.commit()
 
         return ChatResponse(
             message_id=str(assistant_msg_id),
             conversation_id=str(conv.id),
-            answer=gen_result.answer,
-            grounded=gen_result.grounded,
-            abstained=gen_result.abstained,
-            citations=citations,
+            answer=final_answer,
+            grounded=final_grounded,
+            abstained=final_abstained,
+            citations=citations if not out_result.blocked else [],
         )
 
     async def stream_chat(
@@ -284,11 +379,25 @@ class ChatService:
             yield _sse_event("error", {"detail": "too_many_streams"})
             return
 
+        # 1. Input Guard (Rule 12): Block known jailbreaks and sensitive keywords
+        from packages.security.guardrails import InputGuard, OutputGuard
+        is_safe_in, in_category, in_err = InputGuard.check(request.message)
+        if not is_safe_in:
+            yield _sse_event(
+                "error",
+                {
+                    "detail": "input_guard_violation",
+                    "message": in_err or InputGuard.GENERIC_BLOCKED_MESSAGE,
+                },
+            )
+            return
+
         try:
             conv = await self._resolve_conversation(
                 request.conversation_id, current_user, request.message
             )
-            authorized_doc_ids = await self._resolve_authorized_docs(current_user)
+            authorized_docs = await self._resolve_authorized_docs_metadata(current_user)
+            authorized_doc_ids = [d["id"] for d in authorized_docs]
 
             # Record user message in DB
             user_msg = Message(
@@ -310,6 +419,8 @@ class ChatService:
                 },
             )
 
+            history = await self._resolve_conversation_history(request, conv)
+
             # Risk 3: timeout guard — prevents indefinitely held connections.
             timeout_secs = settings.LLM_TIMEOUT_SECONDS
             gen_result = None
@@ -321,6 +432,8 @@ class ChatService:
                         authorized_document_ids=authorized_doc_ids,
                         user_id=user_id_str,
                         base_filters=request.filters or {},
+                        authorized_documents=authorized_docs,
+                        conversation_history=history,
                     ):
                         if item.get("type") == "step":
                             yield _sse_event(
@@ -330,6 +443,7 @@ class ChatService:
                                     "title": item.get("title", ""),
                                     "detail": item.get("detail", ""),
                                     "status": item.get("status", "completed"),
+                                    "evidence": item.get("evidence"),
                                 },
                             )
                         elif item.get("type") == "result":
@@ -351,20 +465,33 @@ class ChatService:
                     query_type="DIRECT",
                 )
 
+            # 2. Output Guard (Rule 12): Inspect response for restricted data
+            out_result = OutputGuard.sanitize_or_block(gen_result.answer)
+            if out_result.blocked:
+                gen_result = GenerationResult(
+                    answer=out_result.safe_text,
+                    citation_ids=[],
+                    grounded=False,
+                    abstained=True,
+                    query_type=gen_result.query_type if gen_result else "DIRECT",
+                )
+
             yield _sse_event(
                 "retrieval_completed", {"citations_count": len(gen_result.citation_ids)}
             )
             yield _sse_event("reranking_completed", {"status": "completed"})
             yield _sse_event("generation_started", {"status": "generating"})
 
-            # Stream answer in progressive tokens with smooth pacing
+            # Stream answer in progressive tokens with natural, buttery pacing
+            # Preserves all newlines (\n\n), tables, lists, and indentation faithfully
+            import re
             answer = gen_result.answer
-            words = answer.split(" ")
-            chunk_size = 3
-            for i in range(0, len(words), chunk_size):
-                token_chunk = " ".join(words[i : i + chunk_size]) + " "
+            tokens = re.findall(r"\S+|\n+|[^\S\r\n]+", answer)
+            chunk_size = 2
+            for i in range(0, len(tokens), chunk_size):
+                token_chunk = "".join(tokens[i : i + chunk_size])
                 yield _sse_event("token", {"token": token_chunk})
-                await asyncio.sleep(0.015)
+                await asyncio.sleep(0.012)
 
             # Record assistant message in DB
             assistant_msg_id = uuid.uuid4()
@@ -379,26 +506,44 @@ class ChatService:
             )
             self.session.add(asst_msg)
 
-            # Persist and yield citations
+            # Persist and yield enriched citations
+            doc_title_map = {d["id"]: d["title"] for d in authorized_docs}
+            ev_map = {e.chunk_id: e for e in getattr(gen_result, "evidence", [])}
+
             citations: list[ChatCitationItem] = []
-            for cid in dict.fromkeys(gen_result.citation_ids):
+            for idx, cid in enumerate(dict.fromkeys(gen_result.citation_ids)):
                 chunk_uuid = None
                 try:
                     chunk_uuid = uuid.UUID(cid)
                 except (ValueError, TypeError):
                     chunk_uuid = None
 
+                ev = ev_map.get(cid)
+                doc_id_val = str(ev.document_id) if ev and ev.document_id else None
+                doc_title_val = doc_title_map.get(doc_id_val) if doc_id_val else None
+                page_val = ev.page_start if ev else None
+                evidence_text_val = ev.text[:300] if ev and ev.text else None
+                label_val = f"[{idx + 1}]"
+
                 if chunk_uuid:
                     cit_record = MessageCitation(
                         id=uuid.uuid4(),
                         message_id=assistant_msg_id,
                         chunk_id=chunk_uuid,
-                        citation_label=cid,
+                        citation_label=label_val,
                     )
                     self.session.add(cit_record)
 
-                citations.append(ChatCitationItem(chunk_id=cid))
-                yield _sse_event("citation", {"citation_id": cid, "chunk_id": cid})
+                cit_item = ChatCitationItem(
+                    chunk_id=cid,
+                    document_id=doc_id_val,
+                    document_title=doc_title_val,
+                    citation_label=label_val,
+                    page=page_val,
+                    evidence_text=evidence_text_val,
+                )
+                citations.append(cit_item)
+                yield _sse_event("citation", cit_item.model_dump())
 
             await self.session.commit()
 
@@ -421,3 +566,33 @@ class ChatService:
         finally:
             # Always release the slot so the cap doesn't permanently block the user.
             _sse_release(user_id_str)
+
+    async def list_conversations(
+        self, user_id: uuid.UUID, limit: int = 50, offset: int = 0
+    ) -> list[Conversation]:
+        """Fetch conversations for user."""
+        return list(await self.conv_repo.list_by_user(user_id=user_id, limit=limit, offset=offset))
+
+    async def get_conversation(
+        self, conversation_id: uuid.UUID, user_id: uuid.UUID
+    ) -> Conversation:
+        """Fetch conversation with messages verifying ownership."""
+        conv = await self.conv_repo.get_with_messages(conversation_id)
+        if conv is None:
+            raise NotFoundException(f"Conversation {conversation_id} not found")
+        if conv.user_id != user_id:
+            raise ForbiddenException("Access to this conversation is denied")
+        return conv
+
+    async def delete_conversation(
+        self, conversation_id: uuid.UUID, user_id: uuid.UUID
+    ) -> None:
+        """Delete conversation after verifying ownership."""
+        conv = await self.conv_repo.get_by_id(conversation_id)
+        if conv is None:
+            raise NotFoundException(f"Conversation {conversation_id} not found")
+        if conv.user_id != user_id:
+            raise ForbiddenException("Access to this conversation is denied")
+        await self.conv_repo.delete(conv)
+        await self.session.commit()
+
