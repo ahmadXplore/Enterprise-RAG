@@ -554,6 +554,7 @@ def _node_finalize(state: GraphState) -> GraphState:
     if state.get("result") is None:
         state["result"] = GenerationResult(
             answer=(
+                "I cannot find that in the provided documentation. "
                 "I was unable to find sufficient evidence in the available documents "
                 "to answer this question."
             ),
@@ -778,7 +779,10 @@ class RAGGraph:
         result = final_state.get("result")
         if result is None:
             return GenerationResult(
-                answer=("I was unable to find sufficient evidence to answer this question."),
+                answer=(
+                    "I cannot find that in the provided documentation. "
+                    "I was unable to find sufficient evidence to answer this question."
+                ),
                 citation_ids=[],
                 grounded=False,
                 abstained=True,
@@ -887,7 +891,10 @@ class RAGGraph:
         result = current_state.get("result")
         if result is None:
             result = GenerationResult(
-                answer="I was unable to find sufficient evidence to answer this question.",
+                answer=(
+                    "I cannot find that in the provided documentation. "
+                    "I was unable to find sufficient evidence to answer this question."
+                ),
                 citation_ids=[],
                 grounded=False,
                 abstained=True,

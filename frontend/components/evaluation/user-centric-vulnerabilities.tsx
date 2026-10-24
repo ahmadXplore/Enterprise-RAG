@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, HelpCircle, Eye, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { ExternalLink, HelpCircle, Eye, ShieldAlert, CheckCircle2, ThumbsUp, MessageSquareQuote, FileQuestion } from "lucide-react";
 import { VulnerabilityTableRow } from "@/lib/api";
 
 interface UserCentricVulnerabilitiesProps {
@@ -12,6 +12,26 @@ interface UserCentricVulnerabilitiesProps {
 
 export function UserCentricVulnerabilities({ rows }: UserCentricVulnerabilitiesProps) {
   const defaultRows: VulnerabilityTableRow[] = [
+    {
+      reveal: "Binary Feedback (+/-) & Corrections",
+      measures: "Completeness & Accuracy",
+      capture_method:
+        "User thumbs-up/down button on every response. Thumbs-down prompts with 'What was missing or incorrect?' to capture vector DB gaps.",
+      current_status: "Active live feedback loop",
+      risk_assessment: "Optimal",
+      metric_value: 0,
+      metric_unit: "ratings",
+    },
+    {
+      reveal: "'I Don't Know' Abstention Rate",
+      measures: "Vector Database Knowledge Gaps",
+      capture_method:
+        "Agent says: 'I cannot find that in the provided documentation.' Tracks frequency of this phrase to identify unindexed topics.",
+      current_status: "Active Tracking",
+      risk_assessment: "Comprehensive Coverage",
+      metric_value: 0,
+      metric_unit: "triggers",
+    },
     {
       reveal: "Citation clicks",
       measures: "Trust & Completeness",
@@ -26,7 +46,7 @@ export function UserCentricVulnerabilities({ rows }: UserCentricVulnerabilitiesP
       reveal: "Fallback triggers",
       measures: "Database Gaps",
       capture_method:
-        "Count how many times users force the agent into a 'human handoff' or support ticket creation.",
+        "Count how many times users force the agent into an abstention or ungrounded fallback.",
       current_status: "Measured via Grounding & Abstained Counters",
       risk_assessment: "Healthy",
       metric_value: 0,
@@ -36,7 +56,7 @@ export function UserCentricVulnerabilities({ rows }: UserCentricVulnerabilitiesP
       reveal: "Over-the-shoulder UX",
       measures: "Hallucinations",
       capture_method:
-        "Watch 5–10 live users interact with the tool without intervening. Note where they hesitate or look confused.",
+        "Watch live users interact with the tool without intervening. Note where they hesitate or submit frustration keywords.",
       current_status: "Anonymized session logging with 10+ turn flags",
       risk_assessment: "Monitoring Active",
       metric_value: 0,
@@ -76,6 +96,8 @@ export function UserCentricVulnerabilities({ rows }: UserCentricVulnerabilitiesP
           </thead>
           <tbody className="divide-y divide-border/60">
             {displayRows.map((row, idx) => {
+              const isFeedback = row.reveal.toLowerCase().includes("feedback");
+              const isIdk = row.reveal.toLowerCase().includes("know") || row.reveal.toLowerCase().includes("abstention");
               const isClicks = row.reveal.toLowerCase().includes("citation");
               const isFallback = row.reveal.toLowerCase().includes("fallback");
               const isUx = row.reveal.toLowerCase().includes("ux");
@@ -85,7 +107,11 @@ export function UserCentricVulnerabilities({ rows }: UserCentricVulnerabilitiesP
                   <td className="py-3.5 px-4 font-semibold text-foreground align-top">
                     <div className="flex items-center gap-2">
                       <div className="p-1 rounded bg-primary/10 text-primary">
-                        {isClicks ? (
+                        {isFeedback ? (
+                          <ThumbsUp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        ) : isIdk ? (
+                          <FileQuestion className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        ) : isClicks ? (
                           <ExternalLink className="h-3.5 w-3.5" />
                         ) : isFallback ? (
                           <HelpCircle className="h-3.5 w-3.5" />

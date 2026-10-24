@@ -100,6 +100,7 @@ class RAGGenerator:
         if not evidence:
             return GenerationResult(
                 answer=(
+                    "I cannot find that in the provided documentation. "
                     "I was unable to find sufficient evidence in the available documents "
                     "to answer this question."
                 ),
@@ -162,8 +163,8 @@ class RAGGenerator:
             # This can happen when the LLM provider's content filter blocked the output
             # (e.g. finish_reason=content_filter) or when the model returned empty JSON
             answer = (
-                "I'm sorry, but I was unable to generate a response for this question. "
-                "This may be due to content filtering or insufficient evidence in the documents. "
+                "I cannot find that in the provided documentation. "
+                "I was unable to find sufficient evidence in the documents to answer this question. "
                 "Please try rephrasing your question."
             )
             abstained = True

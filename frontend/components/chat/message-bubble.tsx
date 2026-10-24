@@ -9,7 +9,11 @@ import { CitationCard } from "@/components/citations/citation-card";
 import { ThinkingProcess } from "@/components/chat/thinking-process";
 import { AgentStep, ChatCitationItem } from "@/lib/types";
 
+import { ResponseFeedback } from "@/components/chat/response-feedback";
+
 export interface MessageBubbleProps {
+  id?: string;
+  conversationId?: string;
   role: "user" | "assistant";
   content: string;
   grounded?: boolean;
@@ -19,6 +23,9 @@ export interface MessageBubbleProps {
   durationSeconds?: number;
   onSelectCitation?: (citation: ChatCitationItem) => void;
   isStreaming?: boolean;
+  userQuery?: string;
+  initialRating?: "thumbs_up" | "thumbs_down" | null;
+  initialCorrection?: string | null;
 }
 
 function cleanMarkdown(raw: string): string {
@@ -31,6 +38,8 @@ function cleanMarkdown(raw: string): string {
 }
 
 export function MessageBubble({
+  id,
+  conversationId,
   role,
   content,
   grounded,
@@ -40,6 +49,9 @@ export function MessageBubble({
   durationSeconds = 0,
   onSelectCitation,
   isStreaming = false,
+  userQuery,
+  initialRating = null,
+  initialCorrection = null,
 }: MessageBubbleProps) {
   const isUser = role === "user";
   const cleanedText = cleanMarkdown(content);
@@ -176,22 +188,37 @@ export function MessageBubble({
           </div>
         )}
 
-        {/* Action Bar with Copy Icon (No text, strictly icon) */}
+        {/* Action Bar with Copy Icon and Binary Feedback (+/-) Loops */}
         {((isUser && content) || (!isUser && !isStreaming && (cleanedText.length > 0 || content.length > 0))) && (
-          <div className={`flex items-center gap-1.5 ${isUser ? "justify-end" : "justify-start"} pt-0.5`}>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors border border-transparent hover:border-border/50"
-              title={copied ? "Copied" : "Copy to clipboard"}
-              aria-label={copied ? "Copied" : "Copy to clipboard"}
-            >
-              {copied ? (
-                <Check className="h-3.5 w-3.5 text-emerald-500" />
-              ) : (
-                <Copy className="h-3.5 w-3.5" />
+          <div className={`flex flex-col gap-2 ${isUser ? "items-end" : "items-start"} pt-0.5`}>
+            <div className={`flex items-center gap-1.5 ${isUser ? "justify-end" : "justify-start"}`}>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors border border-transparent hover:border-border/50"
+                title={copied ? "Copied" : "Copy to clipboard"}
+                aria-label={copied ? "Copied" : "Copy to clipboard"}
+              >
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+              </button>
+
+              {!isUser && (
+                <>
+                  <span className="h-3 w-px bg-border/60 mx-0.5" />
+                  <ResponseFeedback
+                    messageId={id || `msg-${cleanedText.slice(0, 16)}`}
+                    conversationId={conversationId}
+                    userQuery={userQuery}
+                    initialRating={initialRating}
+                    initialCorrection={initialCorrection}
+                  />
+                </>
               )}
-            </button>
+            </div>
           </div>
         )}
 

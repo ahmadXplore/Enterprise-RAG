@@ -212,8 +212,50 @@ async def analyze_user_conversations(
     )
     total_citation_clicks = cit_clicks_res.scalar_one() or 0
 
+    # 3. User Feedback (+/-) and Corrections tracked in audit logs
+    feedback_logs_res = await session.execute(
+        select(AuditLog)
+        .where(AuditLog.action == "user_feedback")
+        .order_by(AuditLog.created_at.desc())
+    )
+    feedback_logs = feedback_logs_res.scalars().all()
+
+    thumbs_up_count = 0
+    thumbs_down_count = 0
+    recent_corrections = []
+
+    for fb in feedback_logs:
+        meta = fb.metadata_ or {}
+        rating = meta.get("rating")
+        if rating == "thumbs_up":
+            thumbs_up_count += 1
+        elif rating == "thumbs_down":
+            thumbs_down_count += 1
+
+        corr_text = meta.get("feedback_text")
+        tags = meta.get("tags") or []
+        if corr_text or rating == "thumbs_down":
+            anon_user = f"User #{str(fb.user_id)[:6]}" if fb.user_id else "Anonymous User"
+            recent_corrections.append({
+                "id": str(fb.id),
+                "message_id": meta.get("message_id") or (str(fb.resource_id) if fb.resource_id else ""),
+                "conversation_id": meta.get("conversation_id"),
+                "rating": rating or "thumbs_down",
+                "correction_text": corr_text or "No correction text provided",
+                "tags": tags,
+                "user_query": meta.get("user_query") or "User query not recorded",
+                "anonymized_user": anon_user,
+                "timestamp": fb.created_at.isoformat(),
+            })
+
+    total_feedback = thumbs_up_count + thumbs_down_count
+    satisfaction_rate = (
+        round((thumbs_up_count / total_feedback) * 100, 1) if total_feedback > 0 else 100.0
+    )
+
     longest_conversations = []
     frustration_incidents = []
+    idk_incidents = []
 
     FRUSTRATION_KEYWORDS = [
         "wrong",
@@ -237,11 +279,20 @@ async def analyze_user_conversations(
         "awful",
     ]
 
+    CANONICAL_IDK_PHRASE = "I cannot find that in the provided documentation"
+    IDK_MATCH_PATTERNS = [
+        "cannot find that in the provided documentation",
+        "unable to find sufficient evidence",
+        "insufficient evidence in the available documents",
+        "i was unable to find sufficient evidence",
+    ]
+
     total_turns_across_all = 0
     struggling_count = 0
     total_user_queries = 0
     total_assistant_responses = 0
     fallback_count = 0
+    idk_triggers_count = 0
 
     for conv in convs:
         msgs = conv.messages or []
@@ -263,6 +314,29 @@ async def analyze_user_conversations(
 
         if is_struggling:
             struggling_count += 1
+
+        # Track "I don't know" rates and exact triggers
+        for idx, m in enumerate(msgs_sorted):
+            if m.role == "assistant":
+                content_lower = (m.content or "").lower()
+                is_idk = any(p in content_lower for p in IDK_MATCH_PATTERNS) or getattr(m, "abstained", False)
+                if is_idk:
+                    idk_triggers_count += 1
+                    # Pair with preceding user query
+                    preceding_user_q = "Unknown question"
+                    for prev_m in reversed(msgs_sorted[:idx]):
+                        if prev_m.role == "user":
+                            preceding_user_q = prev_m.content
+                            break
+
+                    idk_incidents.append({
+                        "conversation_id": str(conv.id),
+                        "anonymized_user": anon_user,
+                        "user_query": preceding_user_q,
+                        "assistant_snippet": m.content[:140] + ("..." if len(m.content) > 140 else ""),
+                        "timestamp": m.created_at.isoformat(),
+                        "abstained": getattr(m, "abstained", False),
+                    })
 
         # Record longest conversations (keep >= 4 turns or flagged struggling)
         if total_turns >= 4 or is_struggling:
@@ -318,11 +392,31 @@ async def analyze_user_conversations(
 
     longest_conversations.sort(key=lambda x: x["total_turns"], reverse=True)
     frustration_incidents.sort(key=lambda x: x["timestamp"], reverse=True)
+    idk_incidents.sort(key=lambda x: x["timestamp"], reverse=True)
 
     click_pct = round((total_citation_clicks / max(1, total_assistant_responses)) * 100, 1)
     fallback_pct = round((fallback_count / max(1, total_assistant_responses)) * 100, 1)
+    idk_rate_pct = round((idk_triggers_count / max(1, total_assistant_responses)) * 100, 1)
 
     vulnerability_table = [
+        {
+            "reveal": "Binary Feedback (+/-) & Corrections",
+            "measures": "Completeness & Accuracy",
+            "capture_method": "User thumbs-up/down button on every response. Thumbs-down prompts with 'What was missing or incorrect?' to capture vector DB gaps.",
+            "current_status": f"{total_feedback} ratings ({satisfaction_rate}% positive, {thumbs_down_count} corrections logged)",
+            "risk_assessment": "Optimal" if satisfaction_rate >= 85 or total_feedback == 0 else f"{thumbs_down_count} Negative Feedback Alerts",
+            "metric_value": total_feedback,
+            "metric_unit": "ratings",
+        },
+        {
+            "reveal": "'I Don't Know' Abstention Rate",
+            "measures": "Vector Database Knowledge Gaps",
+            "capture_method": "Agent says: 'I cannot find that in the provided documentation.' Tracks frequency of this phrase to identify unindexed topics.",
+            "current_status": f"{idk_triggers_count} 'I don't know' responses ({idk_rate_pct}% of {total_assistant_responses} answers)",
+            "risk_assessment": "Comprehensive Coverage" if idk_rate_pct < 10 else f"{idk_triggers_count} Document Ingestion Gaps",
+            "metric_value": idk_triggers_count,
+            "metric_unit": "triggers",
+        },
         {
             "reveal": "Citation clicks",
             "measures": "Trust & Completeness",
@@ -335,7 +429,7 @@ async def analyze_user_conversations(
         {
             "reveal": "Fallback triggers",
             "measures": "Database Gaps",
-            "capture_method": "Count how many times users force the agent into a 'human handoff' or support ticket creation.",
+            "capture_method": "Count how many times users force the agent into an abstention or ungrounded fallback.",
             "current_status": f"{fallback_count} fallbacks triggered ({fallback_pct}% fallback rate across {total_assistant_responses} answers)",
             "risk_assessment": "Healthy" if fallback_pct < 15 else "Corpus Gap Warning",
             "metric_value": fallback_count,
@@ -344,7 +438,7 @@ async def analyze_user_conversations(
         {
             "reveal": "Over-the-shoulder UX",
             "measures": "Hallucinations",
-            "capture_method": "Watch 5–10 live users interact with the tool without intervening. Note where they hesitate or look confused.",
+            "capture_method": "Watch live users interact with the tool without intervening. Note where they hesitate or submit frustration keywords.",
             "current_status": f"{struggling_count} sessions with 10+ turns; {len(frustration_incidents)} frustration flags identified",
             "risk_assessment": "Low Friction" if struggling_count == 0 else f"{struggling_count} Sessions Require Qualitative Review",
             "metric_value": struggling_count,
@@ -363,10 +457,28 @@ async def analyze_user_conversations(
             "frustration_incidents_count": len(frustration_incidents),
             "total_citation_clicks": total_citation_clicks,
             "fallback_triggers_count": fallback_count,
+            "total_feedback": total_feedback,
+            "thumbs_up_count": thumbs_up_count,
+            "thumbs_down_count": thumbs_down_count,
+            "satisfaction_rate": satisfaction_rate,
+            "idk_triggers_count": idk_triggers_count,
+            "idk_rate": idk_rate_pct,
+        },
+        "feedback_metrics": {
+            "total_feedback": total_feedback,
+            "thumbs_up_count": thumbs_up_count,
+            "thumbs_down_count": thumbs_down_count,
+            "satisfaction_rate": satisfaction_rate,
+            "recent_corrections": recent_corrections,
+        },
+        "idk_metrics": {
+            "canonical_phrase": CANONICAL_IDK_PHRASE,
+            "total_idk_triggers": idk_triggers_count,
+            "idk_rate": idk_rate_pct,
+            "idk_incidents": idk_incidents,
         },
         "vulnerability_table": vulnerability_table,
         "longest_conversations": longest_conversations,
         "frustration_incidents": frustration_incidents,
     }
-
 

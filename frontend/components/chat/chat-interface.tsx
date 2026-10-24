@@ -334,6 +334,7 @@ export function ChatInterface({ conversationId: propConversationId }: ChatInterf
               );
               return {
                 ...m,
+                id: result.messageId || m.id,
                 grounded: result.grounded ?? m.grounded,
                 abstained: result.abstained ?? false,
                 citations: deduped,
@@ -474,20 +475,30 @@ export function ChatInterface({ conversationId: propConversationId }: ChatInterf
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 max-w-4xl mx-auto w-full relative"
         >
-          {messages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              role={m.role}
-              content={m.content}
-              grounded={m.grounded}
-              abstained={m.abstained}
-              citations={m.citations}
-              steps={m.steps}
-              durationSeconds={m.durationSeconds}
-              isStreaming={m.id === streamingId}
-              onSelectCitation={handleSelectCitation}
-            />
-          ))}
+          {messages.map((m, idx) => {
+            const precedingUserMsg = messages
+              .slice(0, idx)
+              .reverse()
+              .find((prev) => prev.role === "user");
+
+            return (
+              <MessageBubble
+                key={m.id}
+                id={m.id}
+                conversationId={activeSessionId || undefined}
+                role={m.role}
+                content={m.content}
+                grounded={m.grounded}
+                abstained={m.abstained}
+                citations={m.citations}
+                steps={m.steps}
+                durationSeconds={m.durationSeconds}
+                isStreaming={m.id === streamingId}
+                userQuery={precedingUserMsg?.content}
+                onSelectCitation={handleSelectCitation}
+              />
+            );
+          })}
 
           <div ref={messagesEndRef} />
         </div>

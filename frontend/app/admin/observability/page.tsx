@@ -15,6 +15,8 @@ import {
   Search,
   CheckCircle2,
   AlertTriangle,
+  ThumbsUp,
+  FileQuestion,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -203,6 +205,63 @@ export default function ObservabilityPage() {
               </Card>
             </div>
 
+            {/* Real-Time User Feedback Loops & Knowledge Gap Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Feedback Loop KPI */}
+              <Card className="border-border bg-card shadow-xs p-4 space-y-2 border-l-4 border-l-emerald-500">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground flex items-center gap-1.5">
+                    <ThumbsUp className="h-4 w-4 text-emerald-500" />
+                    Real-Time User Feedback (+/-)
+                  </span>
+                  <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-mono text-[10px]">
+                    Live User Telemetry
+                  </Badge>
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <div className="text-2xl font-bold font-mono text-foreground">
+                    {analysis?.summary?.satisfaction_rate ?? 100}%
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Positive Feedback ({analysis?.summary?.thumbs_up_count ?? 0} thumbs up, {analysis?.summary?.thumbs_down_count ?? 0} thumbs down)
+                  </span>
+                </div>
+                <div className="pt-1 flex items-center justify-between text-[11px] border-t border-border/60">
+                  <span className="text-muted-foreground">User Corrections Logged:</span>
+                  <span className="font-semibold text-rose-600 dark:text-rose-400 font-mono">
+                    {analysis?.feedback_metrics?.recent_corrections?.length ?? 0} knowledge gaps identified
+                  </span>
+                </div>
+              </Card>
+
+              {/* "I Don't Know" Rate KPI */}
+              <Card className="border-border bg-card shadow-xs p-4 space-y-2 border-l-4 border-l-amber-500">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground flex items-center gap-1.5">
+                    <FileQuestion className="h-4 w-4 text-amber-500" />
+                    &ldquo;I Don&apos;t Know&rdquo; Rate (Vector DB Gap Indicator)
+                  </span>
+                  <Badge variant="outline" className="border-amber-500/30 text-amber-600 dark:text-amber-400 font-mono text-[10px]">
+                    Programmed Abstention
+                  </Badge>
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <div className="text-2xl font-bold font-mono text-foreground">
+                    {analysis?.summary?.idk_rate ?? 0}%
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Triggered &ldquo;I cannot find that in the provided documentation&rdquo;
+                  </span>
+                </div>
+                <div className="pt-1 flex items-center justify-between text-[11px] border-t border-border/60">
+                  <span className="text-muted-foreground">Missing Document Queries:</span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400 font-mono">
+                    {analysis?.summary?.idk_triggers_count ?? 0} documented gaps
+                  </span>
+                </div>
+              </Card>
+            </div>
+
             {/* Sub-Stage Latency Decomposition & Stage Timeline */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Latency Stages Chart */}
@@ -288,6 +347,10 @@ export default function ObservabilityPage() {
             <RealUserConversationsMonitor
               longestConversations={analysis?.longest_conversations || []}
               frustrationIncidents={analysis?.frustration_incidents || []}
+              userCorrections={analysis?.feedback_metrics?.recent_corrections || []}
+              idkIncidents={analysis?.idk_metrics?.idk_incidents || []}
+              idkRate={analysis?.idk_metrics?.idk_rate || 0}
+              satisfactionRate={analysis?.feedback_metrics?.satisfaction_rate || 100}
             />
 
             {/* Recent Query Telemetry Table */}
@@ -352,7 +415,7 @@ export default function ObservabilityPage() {
                           )}
                         </td>
                         <td className="py-3 px-4 text-muted-foreground font-mono text-[11px]">
-                          {new Date(t.timestamp).toLocaleTimeString()}
+                          {new Date(t.timestamp).toLocaleString("en-PK", { timeZone: "Asia/Karachi", dateStyle: "short", timeStyle: "short" })}
                         </td>
                       </tr>
                     ))}

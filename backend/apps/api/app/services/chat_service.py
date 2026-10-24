@@ -458,7 +458,7 @@ class ChatService:
 
             if gen_result is None:
                 gen_result = GenerationResult(
-                    answer="I was unable to find sufficient evidence to answer this question.",
+                    answer="I cannot find that in the provided documentation. I was unable to find sufficient evidence to answer this question.",
                     citation_ids=[],
                     grounded=False,
                     abstained=True,
